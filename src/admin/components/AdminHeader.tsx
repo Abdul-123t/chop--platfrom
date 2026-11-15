@@ -42,7 +42,15 @@ export function AdminHeader({ tab, onTabChange, theme, onToggleTheme, onLogout, 
           >
             {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
-          <button type="button" onClick={onLogout} className={iconButton} aria-label="Sign out">
+          <button
+            type="button"
+            onClick={() => {
+              if (window.confirm('Sign out of CHOP Admin?')) onLogout();
+            }}
+            className={iconButton}
+            aria-label="Sign out"
+            title="Sign out"
+          >
             <LogOut className="w-4 h-4" />
           </button>
         </div>
