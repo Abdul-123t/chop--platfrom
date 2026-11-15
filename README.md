@@ -1,6 +1,29 @@
 # CHOP
 
-CHOP is a React/Vite pre-launch website. Waitlist submissions are accepted by the
+CHOP is a React/Vite pre-launch website.
+
+## Backend API, admin and newsletters
+
+Signups, notification emails, the admin dashboard data and newsletters are
+served by the separate **chop-API** backend (Next.js). All UI stays in this
+project:
+
+- `/` is the waitlist website. When `VITE_API_URL` is set, the form posts to
+  `${VITE_API_URL}/api/waitlist`; otherwise it falls back to the local
+  `/api/waitlist` function described below.
+- `/admin` (configurable with `VITE_ADMIN_PATH`) is the admin dashboard: sign in
+  with the backend's `ADMIN_PASSWORD`, browse and export the waitlist, select
+  people, and compose, preview, test and send newsletters.
+- `/unsubscribe?token=...` is the page linked from every email.
+
+Set `VITE_API_URL` (the backend URL, no trailing slash) and optionally
+`VITE_ADMIN_PATH` in `.env.local` and in Vercel. If you change the admin path,
+update the rewrites in `vercel.json` to match. The backend must list this
+site's origin in its `ALLOWED_ORIGINS`.
+
+## Local waitlist function
+
+The original waitlist function in this repository works without the backend. Waitlist submissions are accepted by the
 same-origin `/api/waitlist` serverless function and saved through the official
 Google Sheets API. Google credentials are read only by the server; never add them
 to `src/config.ts`, a `VITE_*` variable, or any other browser bundle.
