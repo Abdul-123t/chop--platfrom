@@ -13,7 +13,7 @@ interface SubscriberFiltersBarProps {
 export function SubscriberFiltersBar({ filters, onChange }: SubscriberFiltersBarProps) {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <div className="relative flex-1 min-w-[180px]">
+      <div className="relative flex-1 basis-full sm:basis-[220px] min-w-0">
         <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${mutedText}`} aria-hidden="true" />
         <input
           type="search"
@@ -38,7 +38,7 @@ export function SubscriberFiltersBar({ filters, onChange }: SubscriberFiltersBar
         aria-label="Filter by status"
         value={filters.status}
         onChange={(event) => onChange({ ...filters, status: event.target.value as 'all' | SubscriberStatus })}
-        className={`${fieldClass} w-auto py-1.5 text-[12px] font-semibold`}
+        className={`${fieldClass} sm:max-w-max py-1.5 text-[12px] font-semibold`}
       >
         <option value="all">All statuses</option>
         {(Object.keys(STATUS_META) as SubscriberStatus[]).map((status) => (

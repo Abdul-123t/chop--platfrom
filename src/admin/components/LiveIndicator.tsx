@@ -7,11 +7,16 @@ const META: Record<LiveStatus, { label: string; dot: string }> = {
   offline: { label: 'Reconnecting', dot: 'bg-[#DC2626]' },
 };
 
-export function LiveIndicator({ status }: { status: LiveStatus }) {
+interface LiveIndicatorProps {
+  status: LiveStatus;
+  className?: string;
+}
+
+export function LiveIndicator({ status, className = 'hidden sm:inline-flex' }: LiveIndicatorProps) {
   const meta = META[status];
   return (
     <span
-      className={`hidden sm:inline-flex items-center gap-1.5 text-[12px] font-semibold ${mutedText}`}
+      className={`${className} items-center gap-1.5 text-[12px] font-semibold ${mutedText}`}
       title={status === 'live' ? 'Updates appear automatically' : 'Live updates paused, retrying'}
     >
       <span className={`w-2 h-2 rounded-full ${meta.dot}`} aria-hidden="true" />

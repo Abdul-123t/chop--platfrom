@@ -17,7 +17,7 @@ export default function AdminApp() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#F7F1E8] dark:bg-[#0E0D0B] text-[#0E0D0B] dark:text-[#F7F1E8] text-[14px]">
+    <div className="min-h-screen overflow-x-clip bg-[#F7F1E8] dark:bg-[#0E0D0B] text-[#0E0D0B] dark:text-[#F7F1E8] text-[14px]">
       {verifying ? (
         <div className={`min-h-screen flex items-center justify-center text-[13px] ${mutedText}`}>Checking session…</div>
       ) : token ? (

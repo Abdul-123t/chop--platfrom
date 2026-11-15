@@ -20,10 +20,6 @@ export function SubscriberTable({ subscribers, selected, onToggle, onToggleAll, 
   const ids = subscribers.map((subscriber) => subscriber.id);
   const allSelected = ids.length > 0 && ids.every((id) => selected.has(id));
 
-  if (subscribers.length === 0) {
-    return <div className={`py-8 text-center text-[13px] ${mutedText}`}>No one matches these filters.</div>;
-  }
-
   return (
     <div className="overflow-x-auto -mx-4">
       <table className="w-full min-w-[760px] border-collapse">
