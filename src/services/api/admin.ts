@@ -9,8 +9,8 @@ import type {
 } from '../../admin/types';
 
 export const adminApi = {
-  login(password: string) {
-    return apiRequest<SessionResult>('/api/admin/session', { method: 'POST', body: { password } });
+  login(email: string, password: string) {
+    return apiRequest<SessionResult>('/api/admin/session', { method: 'POST', body: { email, password } });
   },
 
   checkSession(token: string) {

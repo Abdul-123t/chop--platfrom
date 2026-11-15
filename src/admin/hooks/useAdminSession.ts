@@ -33,8 +33,8 @@ export function useAdminSession() {
     setSession(null);
   }, []);
 
-  const login = useCallback(async (password: string) => {
-    const next = await adminApi.login(password);
+  const login = useCallback(async (email: string, password: string) => {
+    const next = await adminApi.login(email, password);
     const stored = { token: next.token, expiresAt: next.expiresAt };
     writeStored(stored);
     setSession(stored);
