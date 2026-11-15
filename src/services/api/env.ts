@@ -1,5 +1,3 @@
-import { CHOP_CONFIG } from '../../config';
-
 function normalizePath(path: string): string {
   const trimmed = path.trim().replace(/\/+$/, '');
   if (!trimmed) return '/admin';
@@ -16,4 +14,4 @@ export function apiUrl(path: string): string {
   return `${API_BASE_URL}${path}`;
 }
 
-export const WAITLIST_ENDPOINT = API_BASE_URL ? apiUrl('/api/waitlist') : CHOP_CONFIG.formEndpoint;
+export const WAITLIST_ENDPOINT = apiUrl('/api/waitlist');

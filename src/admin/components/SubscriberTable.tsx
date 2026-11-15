@@ -1,5 +1,6 @@
 import type { Subscriber } from '../types';
 import { formatDate } from '../utils/format';
+import { STATUS_META } from '../utils/status';
 import { displayName } from '../utils/subscribers';
 import { Badge } from '../../components/ui/Badge';
 import { mutedText } from '../../components/ui/styles';
@@ -9,12 +10,13 @@ interface SubscriberTableProps {
   selected: Set<string>;
   onToggle: (id: string) => void;
   onToggleAll: (ids: string[], select: boolean) => void;
+  onOpen: (id: string) => void;
 }
 
 const th = `px-2.5 py-2 text-left text-[11px] font-bold uppercase tracking-wide ${mutedText}`;
 const td = 'px-2.5 py-2 align-top text-[13px]';
 
-export function SubscriberTable({ subscribers, selected, onToggle, onToggleAll }: SubscriberTableProps) {
+export function SubscriberTable({ subscribers, selected, onToggle, onToggleAll, onOpen }: SubscriberTableProps) {
   const ids = subscribers.map((subscriber) => subscriber.id);
   const allSelected = ids.length > 0 && ids.every((id) => selected.has(id));
 
@@ -63,7 +65,13 @@ export function SubscriberTable({ subscribers, selected, onToggle, onToggleAll }
                 />
               </td>
               <td className={td}>
-                <div className="font-semibold leading-tight">{displayName(subscriber) || '—'}</div>
+                <button
+                  type="button"
+                  onClick={() => onOpen(subscriber.id)}
+                  className="font-semibold leading-tight text-left hover:text-[#E8772E] hover:underline cursor-pointer"
+                >
+                  {displayName(subscriber) || '—'}
+                </button>
                 {subscriber.type === 'vendor' && subscriber.businessName && (
                   <div className={`text-[12px] ${mutedText}`}>{subscriber.name}</div>
                 )}
@@ -86,7 +94,7 @@ export function SubscriberTable({ subscribers, selected, onToggle, onToggleAll }
               <td className={`${td} whitespace-nowrap tabular-nums`}>{subscriber.whatsapp}</td>
               <td className={td}>{subscriber.area}</td>
               <td className={td}>
-                <span className={mutedText}>{subscriber.status || '—'}</span>
+                <Badge tone={STATUS_META[subscriber.status].tone}>{STATUS_META[subscriber.status].label}</Badge>
               </td>
               <td className={`${td} pr-4 whitespace-nowrap ${mutedText}`}>{formatDate(subscriber.joinedAt)}</td>
             </tr>

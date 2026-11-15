@@ -33,7 +33,7 @@ export const CHOP_CONFIG = {
 
   // Waitlist Progress & Real Count
   // IMPORTANT: Real count is shown ONLY when waitlistCount >= displayThreshold.
-  // Update waitlistCount from your Google Sheet / backend before deploying.
+  // Update waitlistCount from the admin dashboard total before deploying.
   waitlistCount: 18,
   displayThreshold: 50,
   launchGoal: 500,
@@ -44,8 +44,6 @@ export const CHOP_CONFIG = {
     instagramLink: null as string | null,
   },
   siteUrl: 'https://chopijebu.com',
-
-  formEndpoint: '/api/waitlist',
 
   // Pricing transparency sentence injected into the FAQ
   pricingSentence:

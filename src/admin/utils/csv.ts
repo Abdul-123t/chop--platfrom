@@ -9,7 +9,11 @@ const COLUMNS: Array<[string, (subscriber: Subscriber) => string]> = [
   ['WhatsApp', (s) => s.whatsapp],
   ['Area', (s) => s.area],
   ['Interests', (s) => s.interests.join(', ')],
+  ['Category', (s) => s.vendor?.category ?? ''],
+  ['Delivers', (s) => s.vendor?.delivers ?? ''],
+  ['Social', (s) => s.vendor?.socialMediaLink ?? ''],
   ['Status', (s) => s.status],
+  ['Admin notes', (s) => s.adminNotes],
   ['Subscribed', (s) => (s.subscribed ? 'Yes' : 'No')],
   ['Joined', (s) => s.joinedAt],
 ];

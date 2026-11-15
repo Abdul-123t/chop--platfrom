@@ -1,8 +1,9 @@
-import type { Audience, Subscriber, TypeFilter } from '../types';
+import type { Audience, Subscriber, SubscriberStatus, TypeFilter } from '../types';
 
 export interface SubscriberFilters {
   query: string;
   type: TypeFilter;
+  status: 'all' | SubscriberStatus;
   emailOnly: boolean;
 }
 
@@ -14,6 +15,7 @@ export function filterSubscribers(subscribers: Subscriber[], filters: Subscriber
   const query = filters.query.trim().toLowerCase();
   return subscribers.filter((subscriber) => {
     if (filters.type !== 'all' && subscriber.type !== filters.type) return false;
+    if (filters.status !== 'all' && subscriber.status !== filters.status) return false;
     if (filters.emailOnly && !isReachable(subscriber)) return false;
     if (!query) return true;
     return [subscriber.name, subscriber.businessName, subscriber.email, subscriber.whatsapp, subscriber.area]

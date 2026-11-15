@@ -20,6 +20,7 @@ interface SubscribersViewProps {
   selected: Set<string>;
   onSelectedChange: (selected: Set<string>) => void;
   onEmailSelected: () => void;
+  onOpen: (id: string) => void;
 }
 
 export function SubscribersView({
@@ -29,8 +30,14 @@ export function SubscribersView({
   selected,
   onSelectedChange,
   onEmailSelected,
+  onOpen,
 }: SubscribersViewProps) {
-  const [filters, setFilters] = useState<SubscriberFilters>({ query: '', type: 'all', emailOnly: false });
+  const [filters, setFilters] = useState<SubscriberFilters>({
+    query: '',
+    type: 'all',
+    status: 'all',
+    emailOnly: false,
+  });
   const [limit, setLimit] = useState(PAGE_SIZE);
 
   const filtered = useMemo(() => filterSubscribers(overview.subscribers, filters), [overview.subscribers, filters]);
@@ -102,7 +109,13 @@ export function SubscribersView({
           <div className={`text-[12px] ${mutedText}`}>
             Showing {plural(shown.length, 'person')} of {filtered.length.toLocaleString()}
           </div>
-          <SubscriberTable subscribers={shown} selected={selected} onToggle={toggle} onToggleAll={toggleAll} />
+          <SubscriberTable
+            subscribers={shown}
+            selected={selected}
+            onToggle={toggle}
+            onToggleAll={toggleAll}
+            onOpen={onOpen}
+          />
           {filtered.length > shown.length && (
             <div className="flex justify-center">
               <Button variant="secondary" onClick={() => setLimit((value) => value + PAGE_SIZE)}>

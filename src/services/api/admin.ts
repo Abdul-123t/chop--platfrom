@@ -5,7 +5,9 @@ import type {
   NewsletterLogEntry,
   PreviewResult,
   SessionResult,
+  Subscriber,
   SubscribersOverview,
+  SubscriberUpdate,
 } from '../../admin/types';
 
 export const adminApi = {
@@ -19,6 +21,21 @@ export const adminApi = {
 
   subscribers(token: string, signal?: AbortSignal) {
     return apiRequest<SubscribersOverview>('/api/admin/subscribers', { token, signal });
+  },
+
+  updateSubscriber(token: string, id: string, update: SubscriberUpdate) {
+    return apiRequest<{ subscriber: Subscriber }>(`/api/admin/subscribers/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      token,
+      body: update,
+    });
+  },
+
+  deleteSubscriber(token: string, id: string) {
+    return apiRequest<{ deleted: boolean }>(`/api/admin/subscribers/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      token,
+    });
   },
 
   newsletters(token: string, signal?: AbortSignal) {

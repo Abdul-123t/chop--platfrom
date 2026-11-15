@@ -1,5 +1,6 @@
 import { Search } from 'lucide-react';
-import type { TypeFilter } from '../types';
+import type { SubscriberStatus, TypeFilter } from '../types';
+import { STATUS_META } from '../utils/status';
 import type { SubscriberFilters } from '../utils/subscribers';
 import { Segmented } from '../../components/ui/Segmented';
 import { fieldClass, mutedText } from '../../components/ui/styles';
@@ -33,6 +34,19 @@ export function SubscriberFiltersBar({ filters, onChange }: SubscriberFiltersBar
           { value: 'vendor', label: 'Vendors' },
         ]}
       />
+      <select
+        aria-label="Filter by status"
+        value={filters.status}
+        onChange={(event) => onChange({ ...filters, status: event.target.value as 'all' | SubscriberStatus })}
+        className={`${fieldClass} w-auto py-1.5 text-[12px] font-semibold`}
+      >
+        <option value="all">All statuses</option>
+        {(Object.keys(STATUS_META) as SubscriberStatus[]).map((status) => (
+          <option key={status} value={status}>
+            {STATUS_META[status].label}
+          </option>
+        ))}
+      </select>
       <label className={`inline-flex items-center gap-1.5 text-[12px] font-semibold cursor-pointer ${mutedText}`}>
         <input
           type="checkbox"

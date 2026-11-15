@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Eye, FlaskConical, Send } from 'lucide-react';
 import { adminApi } from '../../services/api/admin';
 import { useAdminQuery } from '../hooks/useAdminQuery';
@@ -20,6 +20,7 @@ interface NewsletterViewProps {
   selected: Set<string>;
   audienceKind: AudienceKind;
   onAudienceKindChange: (kind: AudienceKind) => void;
+  historyVersion: number;
   onUnauthorized: () => void;
 }
 
@@ -33,6 +34,7 @@ export function NewsletterView({
   selected,
   audienceKind,
   onAudienceKindChange,
+  historyVersion,
   onUnauthorized,
 }: NewsletterViewProps) {
   const [content, setContent] = useState<NewsletterContent>({ subject: '', message: '' });
@@ -41,6 +43,11 @@ export function NewsletterView({
   const [notice, setNotice] = useState<string | null>(null);
   const action = useAuthorizedAction(onUnauthorized);
   const history = useAdminQuery(token, adminApi.newsletters, onUnauthorized);
+  const reloadHistory = history.reload;
+
+  useEffect(() => {
+    if (historyVersion > 0) reloadHistory();
+  }, [historyVersion, reloadHistory]);
 
   const audience = useMemo(() => toAudience(audienceKind, selected), [audienceKind, selected]);
   const recipients = useMemo(() => countRecipients(subscribers, audience), [subscribers, audience]);

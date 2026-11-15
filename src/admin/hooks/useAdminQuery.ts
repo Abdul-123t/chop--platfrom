@@ -31,5 +31,5 @@ export function useAdminQuery<T>(token: string, loader: Loader<T>, onUnauthorize
 
   const reload = useCallback(() => setVersion((value) => value + 1), []);
 
-  return { data, error, loading, reload };
+  return { data, error, loading, reload, setData };
 }
