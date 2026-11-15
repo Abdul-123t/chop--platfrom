@@ -1,5 +1,5 @@
 import {createRoot} from 'react-dom/client';
-import App from './App.tsx';
+import { Root } from './Root.tsx';
 import './index.css';
 
 const updateAnimationVisibility = () => {
@@ -8,4 +8,4 @@ const updateAnimationVisibility = () => {
 
 updateAnimationVisibility();
 document.addEventListener('visibilitychange', updateAnimationVisibility);
-createRoot(document.getElementById('root')!).render(<App />);
+createRoot(document.getElementById('root')!).render(<Root />);

@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { Check, Copy, Loader2, Share2 } from 'lucide-react';
+import { WAITLIST_ENDPOINT } from '../services/api/env';
 import { CHOP_CONFIG, CUSTOMER_CRAVINGS, FOOD_CATEGORIES } from '../config';
 import { useReveal } from '../hooks/useReveal';
 import { AreaOption, DeliveryPreference, StudentOption, WaitlistPayload, WaitlistType } from '../types';
@@ -237,7 +238,7 @@ export function WaitlistForm({ mode, onModeChange, area, onAreaChange }: Waitlis
 
     let failureMessage = 'Something went wrong. Please try again in a moment.';
     try {
-      const res = await fetch(CHOP_CONFIG.formEndpoint, {
+      const res = await fetch(WAITLIST_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
