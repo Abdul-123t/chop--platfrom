@@ -1,115 +1,22 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/chop-mark.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>CHOP | Every food spot. Every craving. One place.</title>
-    <meta
-      name="description"
-      content="Discover food businesses in Ijebu Ode and Ijagun (TASUED). CHOP is launching soon. Join the waitlist."
-    />
+    <meta name="theme-color" content="#F7F6F2" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="description" content="CHOP — Premium food discovery and ordering marketplace connecting you with authentic restaurants, bukkas, grills, and street-food favourites across Ijebu Ode and Ijagun, Ogun State." />
+    
+    <!-- Preconnect to Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Open Graph / WhatsApp / Instagram link preview -->
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="CHOP" />
-    <meta property="og:title" content="CHOP | Every food spot. Every craving. One place." />
-    <meta
-      property="og:description"
-      content="Discover food businesses in Ijebu Ode and Ijagun (TASUED). CHOP is launching soon. Join the waitlist."
-    />
-    <meta property="og:url" content="https://chopijebu.com" />
-    <meta property="og:image" content="/og-chop.jpg" />
-
-    <!-- Twitter / X Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="CHOP | Every food spot. Every craving. One place." />
-    <meta
-      name="twitter:description"
-      content="Discover food businesses in Ijebu Ode and Ijagun (TASUED). CHOP is launching soon. Join the waitlist."
-    />
-    <meta name="twitter:image" content="/og-chop.jpg" />
-
-    <meta name="theme-color" content="#0E0D0B" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="preload"
-      href="/fonts/manrope-latin.woff2"
-      as="font"
-      type="font/woff2"
-      crossorigin
-    />
-    <link
-      rel="preload"
-      href="/images/hero-food.webp"
-      as="image"
-      type="image/webp"
-      fetchpriority="high"
-    />
-    <style>
-      html,
-      body {
-        min-height: 100%;
-        margin: 0;
-        background: #0e0d0b;
-      }
-
-      body {
-        font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
-      }
-
-      .critical-hero {
-        background-color: #0e0d0b;
-      }
-
-      html:not(.dark) .critical-hero {
-        background-color: #f7f1e8;
-      }
-
-      .critical-hero-heading {
-        font-size: clamp(38px, 7vw, 80px);
-        font-weight: 800;
-        line-height: 1.05;
-      }
-    </style>
-
-    <!-- Schema.org Structured Data -->
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "CHOP",
-        "applicationCategory": "FoodEstablishment",
-        "operatingSystem": "All",
-        "areaServed": {
-          "@type": "City",
-          "name": "Ijebu Ode",
-          "containedInPlace": {
-            "@type": "State",
-            "name": "Ogun State, Nigeria"
-          }
-        },
-        "description": "Discover food businesses in Ijebu Ode and Ijagun (TASUED). CHOP connects people with bukas, grills, bakeries, shawarma spots, and home kitchens."
-      }
-    </script>
-
-    <!-- Prevent theme flash on load; defaults to dark -->
-    <script>
-      (function () {
-        try {
-          var saved = localStorage.getItem('chop-theme');
-          if (saved === 'light') {
-            document.documentElement.classList.remove('dark');
-          } else {
-            document.documentElement.classList.add('dark');
-          }
-        } catch (e) {
-          document.documentElement.classList.add('dark');
-        }
-      })();
-    </script>
+    <title>CHOP — Good food, closer to you | Ijebu Ode & Ijagun</title>
   </head>
-  <body class="antialiased selection:bg-[#E8772E]/30 selection:text-[#F7F1E8]">
+  <body class="bg-[#F7F6F2] text-[#191919] font-sans antialiased selection:bg-[#C45B3A] selection:text-white">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

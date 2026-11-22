@@ -1,138 +1,227 @@
-import { lazy, useState } from 'react';
-import { DeferredSection } from './components/DeferredSection';
-import { Hero } from './components/Hero';
-import { Navbar } from './components/Navbar';
-import { useTheme } from './hooks/useTheme';
-import { AreaOption, WaitlistType } from './types';
+import React from 'react';
+import { useStore } from './lib/store';
+import { SketchingIntro } from './components/intro/SketchingIntro';
+import { Header } from './components/common/Header';
+import { Footer } from './components/common/Footer';
+import { Hero } from './components/marketplace/Hero';
+import { CategoryFilter } from './components/marketplace/CategoryFilter';
+import { EditorialFoodSpotlight } from './components/marketplace/EditorialFoodSpotlight';
+import { MarketplaceEmptyState } from './components/marketplace/MarketplaceEmptyState';
+import { AuthModal } from './components/marketplace/AuthModal';
+import { CartDrawer } from './components/marketplace/CartDrawer';
+import { OrderTrackerModal } from './components/marketplace/OrderTrackerModal';
+import { CustomerAccountModal } from './components/marketplace/CustomerAccountModal';
+import { StorefrontModal } from './components/marketplace/StorefrontModal';
+import { HowItWorksModal } from './components/how/HowItWorksModal';
+import { MobileBottomNav } from './components/common/MobileBottomNav';
+import { VendorRecruitmentPage } from './components/vendor/VendorRecruitmentPage';
+import { VendorWorkspace } from './components/vendor/VendorWorkspace';
+import { AdminControlCenter } from './components/admin/AdminControlCenter';
+import { MapPin, Clock, ArrowRight, Store } from 'lucide-react';
+import { SERVICE_LOCATIONS, formatNaira } from './lib/constants';
 
-const loadProductPreview = () => import('./components/ProductPreview');
-const loadCategories = () => import('./components/Categories');
-const loadHowItWorks = () => import('./components/HowItWorks');
-const loadWhyChop = () => import('./components/WhyChop');
-const loadBuiltInIjebuOde = () => import('./components/BuiltInIjebuOde');
-const loadStudentsInIjagun = () => import('./components/StudentsInIjagun');
-const loadForVendors = () => import('./components/ForVendors');
-const loadWaitlistForm = () => import('./components/WaitlistForm');
-const loadWaitlistCounter = () => import('./components/WaitlistCounter');
-const loadFaq = () => import('./components/Faq');
-const loadFinalCta = () => import('./components/FinalCta');
-const loadFooter = () => import('./components/Footer');
+export const AppContent: React.FC = () => {
+  const {
+    activeView,
+    setActiveView,
+    approvedVendors,
+    selectedLocation,
+    setSelectedVendorStorefront,
+    orders,
+    setActiveOrderToTrack,
+    setIsOrderTrackerOpen,
+  } = useStore();
 
-const ProductPreview = lazy(() => loadProductPreview().then((module) => ({ default: module.ProductPreview })));
-const Categories = lazy(() => loadCategories().then((module) => ({ default: module.Categories })));
-const HowItWorks = lazy(() => loadHowItWorks().then((module) => ({ default: module.HowItWorks })));
-const WhyChop = lazy(() => loadWhyChop().then((module) => ({ default: module.WhyChop })));
-const BuiltInIjebuOde = lazy(() =>
-  loadBuiltInIjebuOde().then((module) => ({ default: module.BuiltInIjebuOde }))
-);
-const StudentsInIjagun = lazy(() =>
-  loadStudentsInIjagun().then((module) => ({ default: module.StudentsInIjagun }))
-);
-const ForVendors = lazy(() => loadForVendors().then((module) => ({ default: module.ForVendors })));
-const WaitlistForm = lazy(() => loadWaitlistForm().then((module) => ({ default: module.WaitlistForm })));
-const WaitlistCounter = lazy(() =>
-  loadWaitlistCounter().then((module) => ({ default: module.WaitlistCounter }))
-);
-const Faq = lazy(() => loadFaq().then((module) => ({ default: module.Faq })));
-const FinalCta = lazy(() => loadFinalCta().then((module) => ({ default: module.FinalCta })));
-const Footer = lazy(() => loadFooter().then((module) => ({ default: module.Footer })));
+  // Filter approved vendors by selected location, verified status, and completed storefront activation
+  const filteredVendors = approvedVendors.filter(
+    v => v.locationArea === selectedLocation && v.isVerified && v.isActivated
+  );
 
-export default function App() {
-  const { theme, toggleTheme } = useTheme();
-  const [waitlistMode, setWaitlistMode] = useState<WaitlistType>(WaitlistType.Customer);
-  const [selectedArea, setSelectedArea] = useState<AreaOption>(AreaOption.IjebuOde);
-
-  const scrollToWaitlist = (mode?: WaitlistType, area?: AreaOption) => {
-    void loadWaitlistForm();
-    if (mode) {
-      setWaitlistMode(mode);
-    }
-    if (area) {
-      setSelectedArea(area);
-    }
-    const target = document.getElementById('waitlist');
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  const scrollToVendors = () => {
-    setWaitlistMode(WaitlistType.Vendor);
-    const target = document.getElementById('for-vendors');
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+  const latestActiveOrder = orders.find(
+    o => o.status !== 'completed' && o.status !== 'cancelled'
+  );
 
   return (
-    <div className="min-h-screen bg-[#F7F1E8] dark:bg-[#0E0D0B] text-[#0E0D0B] dark:text-[#F7F1E8] transition-colors duration-200">
-      <Navbar
-        theme={theme}
-        onToggleTheme={toggleTheme}
-        onJoinWaitlist={() => scrollToWaitlist(WaitlistType.Customer)}
-      />
+    <div className="min-h-screen flex flex-col bg-[#F7F6F2] text-[#191919]">
+      {/* Signature intro animation */}
+      <SketchingIntro />
 
-      <main>
-        <Hero
-          onJoinCustomer={() => scrollToWaitlist(WaitlistType.Customer)}
-          onJoinVendor={scrollToVendors}
-        />
-        <DeferredSection id="preview" tone="preview" reservedHeights={[873, 873, 1404, 1484, 960]}>
-          <ProductPreview />
-        </DeferredSection>
-        <DeferredSection id="categories" tone="cream" reservedHeights={[3429, 3320, 1432, 1102, 1030]}>
-          <Categories />
-        </DeferredSection>
-        <DeferredSection id="how-it-works" tone="cream" reservedHeights={[1180, 1180, 961, 793, 780]}>
-          <HowItWorks />
-        </DeferredSection>
-        <DeferredSection id="why-chop" tone="sand" reservedHeights={[1238, 1184, 875, 742, 729]}>
-          <WhyChop />
-        </DeferredSection>
-        <DeferredSection id="ijebu-ode" tone="cream" reservedHeights={[962, 962, 673, 745, 761]}>
-          <BuiltInIjebuOde />
-        </DeferredSection>
-        <DeferredSection
-          id="students-ijagun"
-          tone="sand"
-          reservedHeights={[1396, 1369, 987, 884, 871]}
-        >
-          <StudentsInIjagun
-            onJoinWaitlist={() => scrollToWaitlist(WaitlistType.Customer, AreaOption.Ijagun)}
-          />
-        </DeferredSection>
-        <DeferredSection id="for-vendors" tone="vendors" reservedHeights={[2320, 2298, 1101, 901, 853]}>
-          <ForVendors onApplyVendor={() => scrollToWaitlist(WaitlistType.Vendor)} />
-        </DeferredSection>
-        <DeferredSection id="waitlist" tone="sand" reservedHeights={[1959, 1932, 1521, 1076, 1076]}>
-          <WaitlistForm
-            mode={waitlistMode}
-            onModeChange={setWaitlistMode}
-            area={selectedArea}
-            onAreaChange={setSelectedArea}
-          />
-        </DeferredSection>
-        <DeferredSection
-          id="waitlist-progress"
-          tone="counter"
-          reservedHeights={[355, 355, 402, 443, 451]}
-        >
-          <WaitlistCounter />
-        </DeferredSection>
-        <DeferredSection id="faq" tone="cream" reservedHeights={[1004, 949, 907, 945, 1009]}>
-          <Faq />
-        </DeferredSection>
-        <DeferredSection id="final-cta" tone="orange" reservedHeights={[465, 465, 374, 449, 457]}>
-          <FinalCta
-            onJoinCustomer={() => scrollToWaitlist(WaitlistType.Customer)}
-            onJoinVendor={() => scrollToWaitlist(WaitlistType.Vendor)}
-          />
-        </DeferredSection>
+      {/* Primary application header */}
+      <Header />
+
+      {/* Live order notification bar */}
+      {latestActiveOrder && (
+        <div className="bg-[#141414] text-white py-2 px-4 border-b border-[#C45B3A]">
+          <div className="max-w-7xl mx-auto flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#C45B3A] animate-ping shrink-0" />
+              <span>
+                Active Order <strong>#{latestActiveOrder.orderNumber}</strong> with {latestActiveOrder.vendorName}:{' '}
+                <span className="capitalize text-[#C45B3A] font-semibold">
+                  {latestActiveOrder.status.replace(/_/g, ' ')}
+                </span>
+              </span>
+            </div>
+            <button
+              onClick={() => {
+                setActiveOrderToTrack(latestActiveOrder);
+                setIsOrderTrackerOpen(true);
+              }}
+              className="text-white underline hover:text-[#C45B3A] text-xs font-semibold"
+            >
+              Track Live →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Main view router */}
+      <main className="flex-1 pb-20 md:pb-0">
+
+        {/* ── Marketplace View ── */}
+        {activeView === 'marketplace' && (
+          <>
+            <Hero />
+            <CategoryFilter />
+
+            {/* Live vendor grid — only genuine approved vendors */}
+            {filteredVendors.length > 0 && (
+              <section className="py-12 bg-white border-y border-[#E6E2DA]">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="flex justify-between items-end mb-8">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-bold uppercase tracking-wider text-[#C45B3A]">
+                          Live Kitchens
+                        </span>
+                        <span className="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full">
+                          Verified
+                        </span>
+                      </div>
+                      <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-[#141414]">
+                        {`Available Kitchens in ${SERVICE_LOCATIONS[selectedLocation].name}`}
+                      </h2>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredVendors.map(vendor => (
+                      <div
+                        key={vendor.id}
+                        className="p-5 rounded-3xl bg-[#F7F6F2] border border-[#E6E2DA] flex flex-col justify-between hover:border-[#141414]/30 hover:shadow-xs transition-all group"
+                      >
+                        <div>
+                          <div className="flex justify-between items-start gap-2">
+                            <div>
+                              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#141414] text-white">
+                                {SERVICE_LOCATIONS[vendor.locationArea].name}
+                              </span>
+                              <h3 className="font-display font-bold text-lg text-[#141414] mt-2 group-hover:text-[#C45B3A] transition-colors">
+                                {vendor.businessName}
+                              </h3>
+                            </div>
+                            {vendor.isPaused && (
+                              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 shrink-0">
+                                Taking a break
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-[#77736C] mt-2 line-clamp-2">{vendor.description}</p>
+                          <div className="flex items-center gap-3 mt-4 text-xs text-[#77736C]">
+                            <span className="flex items-center gap-1">
+                              <MapPin className="w-3.5 h-3.5 text-[#C45B3A]" />
+                              {vendor.landmark}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3.5 h-3.5" />
+                              {vendor.openingHours}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="pt-4 mt-4 border-t border-[#E6E2DA] flex justify-between items-center">
+                          <span className="text-xs font-semibold text-[#141414]">
+                            {vendor.pickupAvailable && vendor.deliveryAvailable
+                              ? 'Delivery & Pickup'
+                              : vendor.deliveryAvailable
+                              ? 'Delivery'
+                              : 'Pickup'}
+                          </span>
+                          <button
+                            onClick={() => setSelectedVendorStorefront(vendor)}
+                            className="py-1.5 px-4 rounded-xl bg-[#141414] text-white text-xs font-semibold hover:bg-black transition-all flex items-center gap-1 focus:outline-none"
+                          >
+                            <span>View Menu</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* 6. Editorial Food Spotlight — Celebrating Nigerian & Ijebu Food Culture */}
+            <EditorialFoodSpotlight />
+
+            {/* 7. Founding Vendor Invitation & Marketplace Onboarding State */}
+            <MarketplaceEmptyState />
+          </>
+        )}
+
+        {/* ── Vendor Recruitment ── */}
+        {activeView === 'for-vendors' && <VendorRecruitmentPage />}
+
+        {/* ── Vendor Workspace — only when approved vendors exist ── */}
+        {activeView === 'vendor-workspace' && (
+          approvedVendors.length > 0 ? (
+            <VendorWorkspace />
+          ) : (
+            <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4 py-20 space-y-5">
+              <div className="w-14 h-14 rounded-2xl bg-[#F0EEE8] flex items-center justify-center">
+                <Store className="w-6 h-6 text-[#C45B3A]" />
+              </div>
+              <div>
+                <h2 className="font-display text-xl font-bold text-[#141414]">No approved vendor account</h2>
+                <p className="text-sm text-[#77736C] mt-2 max-w-xs mx-auto">
+                  You'll need an approved CHOP vendor profile to access the kitchen workspace.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setActiveView('for-vendors');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="py-2.5 px-6 rounded-full bg-[#141414] text-white text-sm font-semibold hover:bg-black transition-all focus:outline-none"
+              >
+                Apply as a Vendor →
+              </button>
+            </div>
+          )
+        )}
+
+        {/* ── Admin Control Centre ── */}
+        {activeView === 'admin-control' && <AdminControlCenter />}
+
       </main>
 
-      <DeferredSection id="footer" tone="footer" reservedHeights={[1091, 1063, 629, 571, 514]}>
-        <Footer />
-      </DeferredSection>
+      {/* Footer */}
+      <Footer />
+
+      {/* Safe-Area-Aware Customer Mobile Bottom Navigation */}
+      <MobileBottomNav />
+
+      {/* Global modals & overlays */}
+      <AuthModal />
+      <CartDrawer />
+      <OrderTrackerModal />
+      <CustomerAccountModal />
+      <StorefrontModal />
+      <HowItWorksModal />
     </div>
   );
+};
+
+export default function App() {
+  return <AppContent />;
 }

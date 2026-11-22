@@ -1,11 +1,13 @@
-import {createRoot} from 'react-dom/client';
-import { Root } from './Root.tsx';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import { StoreProvider } from './lib/store';
 import './index.css';
 
-const updateAnimationVisibility = () => {
-  document.documentElement.classList.toggle('tab-hidden', document.hidden);
-};
-
-updateAnimationVisibility();
-document.addEventListener('visibilitychange', updateAnimationVisibility);
-createRoot(document.getElementById('root')!).render(<Root />);
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <StoreProvider>
+      <App />
+    </StoreProvider>
+  </React.StrictMode>
+);

@@ -1,35 +1,39 @@
-# CHOP
+# CHOP — Good food, closer to you.
+### Premium Food Discovery & Ordering Marketplace for Ijebu Ode & Ijagun, Ogun State, Nigeria
 
-CHOP is a React/Vite pre-launch website.
+**CHOP** is a food marketplace connecting customers, students, and residents with authentic restaurants, bukka kitchens, street-food heroes, grills, shawarma spots, and pastry businesses across **Ijebu Ode** and **Ijagun**.
 
-## Backend API, admin and newsletters
+---
 
-Signups, notification emails, the admin dashboard data and newsletters are
-served by the separate **chop-API** backend (Next.js, PostgreSQL). All UI stays
-in this project:
+## Quick Start
 
-- `/` is the waitlist website. The form posts to `${VITE_API_URL}/api/waitlist`.
-- `/admin` (configurable with `VITE_ADMIN_PATH`) is the admin dashboard. Admins
-  sign in with the email and password created by the backend's seed script, then:
-  - browse, search, filter and export everyone on the waitlist
-  - open an entry to see all of its details, change its status (for example
-    approve or reject a vendor), add notes, or delete it
-  - select people and compose, preview, test and send newsletters
-- `/unsubscribe?token=...` is the page linked from every email.
+```bash
+# 1. Install dependencies
+npm install
 
-## Environment
+# 2. Run local development server
+npm run dev
 
-Copy `.env.example` to `.env.local` and set:
+# 3. Build for production
+npm run build
 
-- `VITE_API_URL`: the backend URL, no trailing slash.
-- `VITE_ADMIN_PATH`: optional, defaults to `/admin`. If you change it, update the
-  rewrites in `vercel.json` to match.
+# 4. Preview production build
+npm run preview
+```
 
-Add the same variables in Vercel. The backend must list this site's origin in
-its `ALLOWED_ORIGINS`.
+Open `http://localhost:5173` to experience the application.
 
-## Development and checks
+---
 
-- `npm run dev` serves the site at http://localhost:3000 (run the backend too).
-- `npm run lint` runs TypeScript checking.
-- `npm run build` creates the production build.
+## Key Features
+
+1. **Short Hand-Drawn Sketching Intro:** 1.5-second lightweight SVG signature animation with skip capability and `prefers-reduced-motion` compliance.
+2. **Official Service Areas Only:** Strictly serves **Ijebu Ode** and **Ijagun (TASUED)**.
+3. **Zero Fake Inventory Integrity:** Intentional pre-launch empty states and authentic founding vendor applications. No synthetic restaurants or reviews.
+4. **Three Connected Workspaces:**
+   - **Customer Marketplace:** Instant search, 8 curated categories, landmark-based checkout, real-time 7-stage order tracking.
+   - **Vendor Workspace:** Order queue, item customizations, price setting in Naira (₦), and "Pause Store" toggle.
+   - **Admin Control Centre:** Passkey gated (`2026`), vendor application review, approved vendor directory, and audit logs.
+5. **Backend Ready:** Full PostgreSQL schema with Row Level Security policies located in `supabase/schema.sql`.
+
+For detailed architecture and co-founder development roadmap, see [HANDOFF.md](file:///Users/abdul-jnr/Desktop/chop-ijebu/HANDOFF.md).
