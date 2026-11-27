@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ApiError } from '../../services/api/http';
+import { ApiError } from '../services/api/http';
 
 type Loader<T> = (token: string, signal: AbortSignal) => Promise<T>;
 
-export function useAdminQuery<T>(token: string, loader: Loader<T>, onUnauthorized: () => void) {
+export function useTokenQuery<T>(token: string, loader: Loader<T>, onUnauthorized: () => void) {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);

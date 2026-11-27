@@ -1,20 +1,26 @@
 import { apiUrl } from './env';
 import { ApiError } from './http';
 
-export type AdminEventType =
+export type LiveEventType =
   | 'entry.created'
   | 'entry.updated'
   | 'entry.deleted'
   | 'preferences.updated'
-  | 'newsletter.sent';
+  | 'newsletter.sent'
+  | 'order.created'
+  | 'order.updated'
+  | 'menu.updated'
+  | 'vendor.updated';
 
-export interface AdminEvent {
-  type: AdminEventType;
+export interface LiveEvent {
+  type: LiveEventType;
   id?: string;
   at: string;
 }
 
-function parseBlock(block: string): AdminEvent | null {
+export type AdminEvent = LiveEvent;
+
+function parseBlock(block: string): LiveEvent | null {
   const data = block
     .split('\n')
     .filter((line) => line.startsWith('data:'))
@@ -22,19 +28,20 @@ function parseBlock(block: string): AdminEvent | null {
     .join('\n');
   if (!data) return null;
   try {
-    return JSON.parse(data) as AdminEvent;
+    return JSON.parse(data) as LiveEvent;
   } catch {
     return null;
   }
 }
 
-export async function streamAdminEvents(
+export async function streamEvents(
+  path: string,
   token: string,
   signal: AbortSignal,
   onOpen: () => void,
-  onEvent: (event: AdminEvent) => void
+  onEvent: (event: LiveEvent) => void
 ): Promise<void> {
-  const response = await fetch(apiUrl('/api/admin/events'), {
+  const response = await fetch(apiUrl(path), {
     headers: { Authorization: `Bearer ${token}`, Accept: 'text/event-stream' },
     signal,
   });

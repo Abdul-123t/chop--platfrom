@@ -2,11 +2,24 @@
   "rewrites": [
     { "source": "/admin", "destination": "/index.html" },
     { "source": "/admin/:path*", "destination": "/index.html" },
+    { "source": "/vendor", "destination": "/index.html" },
+    { "source": "/vendor/:path*", "destination": "/index.html" },
+    { "source": "/vendors", "destination": "/index.html" },
+    { "source": "/v/:slug", "destination": "/index.html" },
+    { "source": "/order/:id", "destination": "/index.html" },
     { "source": "/unsubscribe", "destination": "/index.html" }
   ],
   "headers": [
     {
       "source": "/admin(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/vendor(/.*)?",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/order/(.*)",
       "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
     }
   ]

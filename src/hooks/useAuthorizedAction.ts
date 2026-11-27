@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { ApiError } from '../../services/api/http';
+import { ApiError } from '../services/api/http';
 
 export function useAuthorizedAction(onUnauthorized: () => void) {
   const [pending, setPending] = useState(false);

@@ -1,30 +1,73 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, type ReactNode } from 'react';
 import App from './App.tsx';
-import { ADMIN_PATH, UNSUBSCRIBE_PATH } from './services/api/env';
+import { matchPath, useLocation } from './router/navigation';
+import { ADMIN_PATH, DIRECTORY_PATH, UNSUBSCRIBE_PATH, VENDOR_PATH } from './services/api/env';
 
 const AdminApp = lazy(() => import('./admin/AdminApp'));
+const VendorApp = lazy(() => import('./vendor/VendorApp'));
 const UnsubscribePage = lazy(() => import('./pages/UnsubscribePage'));
+const VendorDirectoryPage = lazy(() => import('./storefront/pages/VendorDirectoryPage'));
+const VendorStorePage = lazy(() => import('./storefront/pages/VendorStorePage'));
+const OrderTrackingPage = lazy(() => import('./storefront/pages/OrderTrackingPage'));
 
-function currentPath(): string {
-  return window.location.pathname.replace(/\/+$/, '') || '/';
+function within(path: string, base: string): boolean {
+  return path === base || path.startsWith(`${base}/`);
+}
+
+function Lazy({ children }: { children: ReactNode }) {
+  return <Suspense fallback={null}>{children}</Suspense>;
 }
 
 export function Root() {
-  const path = currentPath();
+  const { path } = useLocation();
 
-  if (path === ADMIN_PATH || path.startsWith(`${ADMIN_PATH}/`)) {
+  if (within(path, ADMIN_PATH)) {
     return (
-      <Suspense fallback={null}>
+      <Lazy>
         <AdminApp />
-      </Suspense>
+      </Lazy>
+    );
+  }
+
+  if (within(path, VENDOR_PATH)) {
+    return (
+      <Lazy>
+        <VendorApp />
+      </Lazy>
     );
   }
 
   if (path === UNSUBSCRIBE_PATH) {
     return (
-      <Suspense fallback={null}>
+      <Lazy>
         <UnsubscribePage />
-      </Suspense>
+      </Lazy>
+    );
+  }
+
+  if (path === DIRECTORY_PATH) {
+    return (
+      <Lazy>
+        <VendorDirectoryPage />
+      </Lazy>
+    );
+  }
+
+  const store = matchPath('/v/:slug', path);
+  if (store?.slug) {
+    return (
+      <Lazy>
+        <VendorStorePage key={store.slug} slug={store.slug} />
+      </Lazy>
+    );
+  }
+
+  const order = matchPath('/order/:id', path);
+  if (order?.id) {
+    return (
+      <Lazy>
+        <OrderTrackingPage key={order.id} orderId={order.id} />
+      </Lazy>
     );
   }
 

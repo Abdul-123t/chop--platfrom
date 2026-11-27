@@ -6,12 +6,13 @@ import { Button } from '../../components/ui/Button';
 import { Segmented } from '../../components/ui/Segmented';
 import { fieldClass, labelClass, mutedText } from '../../components/ui/styles';
 import { adminApi } from '../../services/api/admin';
-import { useAuthorizedAction } from '../hooks/useAuthorizedAction';
+import { useAuthorizedAction } from '../../hooks/useAuthorizedAction';
 import type { Subscriber, SubscriberStatus } from '../types';
 import { formatDateTime } from '../utils/format';
 import { STATUS_META, statusOptions } from '../utils/status';
 import { displayName } from '../utils/subscribers';
 import { DetailList, type DetailRow } from './DetailList';
+import { VendorAccountSection } from './VendorAccountSection';
 
 interface SubscriberDetailPanelProps {
   token: string;
@@ -151,6 +152,10 @@ export function SubscriberDetailPanel({
               <h3 className={`text-[11px] font-bold uppercase tracking-wide ${mutedText}`}>Business</h3>
               <DetailList rows={vendorRows(subscriber)} />
             </section>
+          )}
+
+          {subscriber.type === 'vendor' && (
+            <VendorAccountSection token={token} subscriber={subscriber} onUnauthorized={onUnauthorized} />
           )}
 
           <section className="space-y-3">

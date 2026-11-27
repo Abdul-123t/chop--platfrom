@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Eye, FlaskConical, Send } from 'lucide-react';
 import { adminApi } from '../../services/api/admin';
-import { useAdminQuery } from '../hooks/useAdminQuery';
-import { useAuthorizedAction } from '../hooks/useAuthorizedAction';
+import { useTokenQuery } from '../../hooks/useTokenQuery';
+import { useAuthorizedAction } from '../../hooks/useAuthorizedAction';
 import type { Audience, AudienceKind, NewsletterContent, PreviewResult, Subscriber } from '../types';
 import { plural } from '../utils/format';
 import { countRecipients } from '../utils/subscribers';
@@ -42,7 +42,7 @@ export function NewsletterView({
   const [preview, setPreview] = useState<PreviewResult | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const action = useAuthorizedAction(onUnauthorized);
-  const history = useAdminQuery(token, adminApi.newsletters, onUnauthorized);
+  const history = useTokenQuery(token, adminApi.newsletters, onUnauthorized);
   const reloadHistory = history.reload;
 
   useEffect(() => {

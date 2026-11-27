@@ -8,6 +8,7 @@ import type {
   Subscriber,
   SubscribersOverview,
   SubscriberUpdate,
+  VendorAccountResult,
 } from '../../admin/types';
 
 export const adminApi = {
@@ -59,6 +60,32 @@ export const adminApi = {
       method: 'POST',
       token,
       body: { ...content, audience },
+    });
+  },
+
+  createVendorAccount(token: string, entryId: string) {
+    return apiRequest<VendorAccountResult>('/api/admin/vendors', { method: 'POST', token, body: { entryId } });
+  },
+
+  vendorSetupLink(token: string, vendorId: string) {
+    return apiRequest<VendorAccountResult>(`/api/admin/vendors/${encodeURIComponent(vendorId)}/setup-link`, {
+      method: 'POST',
+      token,
+    });
+  },
+
+  emailVendorLink(token: string, vendorId: string) {
+    return apiRequest<{ sentTo: string }>(`/api/admin/vendors/${encodeURIComponent(vendorId)}/email-link`, {
+      method: 'POST',
+      token,
+    });
+  },
+
+  setVendorSuspended(token: string, vendorId: string, suspended: boolean) {
+    return apiRequest<VendorAccountResult>(`/api/admin/vendors/${encodeURIComponent(vendorId)}`, {
+      method: 'PATCH',
+      token,
+      body: { suspended },
     });
   },
 };

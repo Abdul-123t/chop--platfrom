@@ -10,6 +10,10 @@ export const ADMIN_PATH = normalizePath(import.meta.env.VITE_ADMIN_PATH ?? '/adm
 
 export const UNSUBSCRIBE_PATH = '/unsubscribe';
 
+export const VENDOR_PATH = '/vendor';
+
+export const DIRECTORY_PATH = '/vendors';
+
 export function apiUrl(path: string): string {
   return `${API_BASE_URL}${path}`;
 }
