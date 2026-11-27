@@ -120,6 +120,11 @@ export function NewsletterView({
             </div>
           </div>
 
+          {recipients === 0 && (
+            <Alert tone="info">
+              No one in this audience has an email address that can receive newsletters yet.
+            </Alert>
+          )}
           {action.error && <Alert tone="error">{action.error}</Alert>}
           {notice && <Alert tone="success">{notice}</Alert>}
 

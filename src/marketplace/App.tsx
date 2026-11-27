@@ -18,6 +18,8 @@ import { VendorRecruitmentPage } from './components/vendor/VendorRecruitmentPage
 import { VendorWorkspace } from './components/vendor/VendorWorkspace';
 import { AdminControlCenter } from './components/admin/AdminControlCenter';
 import { CustomerDashboard } from './components/account/CustomerDashboard';
+import { VendorGridState } from './components/marketplace/VendorGridState';
+import { filterVendors, isListed } from './lib/vendorFilters';
 import { MapPin, Clock, ArrowRight, Store } from 'lucide-react';
 import { SERVICE_LOCATIONS, formatNaira } from './lib/constants';
 
@@ -31,12 +33,19 @@ export const AppContent: React.FC = () => {
     orders,
     setActiveOrderToTrack,
     setIsOrderTrackerOpen,
+    menuItems,
+    searchQuery,
+    selectedCategory,
   } = useStore();
 
   // Filter approved vendors by selected location, verified status, and completed storefront activation
-  const filteredVendors = approvedVendors.filter(
-    v => v.locationArea === selectedLocation && v.isVerified && v.isActivated
-  );
+  const filteredVendors = filterVendors(approvedVendors, menuItems, {
+    area: selectedLocation,
+    query: searchQuery,
+    category: selectedCategory,
+  });
+  const areaCount = approvedVendors.filter((vendor) => isListed(vendor) && vendor.locationArea === selectedLocation).length;
+  const otherAreaCount = approvedVendors.filter((vendor) => isListed(vendor) && vendor.locationArea !== selectedLocation).length;
 
   const latestActiveOrder = orders.find(
     o => o.status !== 'completed' && o.status !== 'cancelled'
@@ -163,6 +172,8 @@ export const AppContent: React.FC = () => {
             )}
 
             {/* 6. Editorial Food Spotlight — Celebrating Nigerian & Ijebu Food Culture */}
+            <VendorGridState areaCount={areaCount} otherAreaCount={otherAreaCount} shownCount={filteredVendors.length} />
+
             <EditorialFoodSpotlight />
 
             {/* 7. Founding Vendor Invitation & Marketplace Onboarding State */}

@@ -81,6 +81,7 @@ interface StoreContextType {
   checkApplicationStatus: (phone: string) => Promise<ApplicationStatusDto | null>;
   marketplaceLoading: boolean;
   marketplaceError: string | null;
+  reloadMarketplace: () => void;
   cartVendor: { deliveryAvailable: boolean; pickupAvailable: boolean; deliveryFee: number; minimumOrder: number; isPaused: boolean } | null;
 
   // Modals & Panels
@@ -1030,6 +1031,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         checkApplicationStatus,
         marketplaceLoading: marketplace.loading,
         marketplaceError: marketplace.error,
+        reloadMarketplace: marketplace.reload,
         cartVendor,
         isCartDrawerOpen,
         setIsCartDrawerOpen,
