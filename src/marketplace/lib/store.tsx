@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useState, useEffect, ReactNode } from 'react';
 import {
   LocationArea,
   VendorApplication,
@@ -17,7 +17,13 @@ import {
   UserRole,
 } from '../types';
 import { SERVICE_LOCATIONS } from './constants';
-import { authService } from './supabase';
+import { marketplaceApi } from '../api/client';
+import { deliveryAddressText, toMenuItems, toOrder, toVendor } from '../api/mappers';
+import type { ApplicationStatusDto } from '../api/types';
+import { useCustomerAccount } from '../api/useCustomerAccount';
+import { useCustomerOrders } from '../api/useCustomerOrders';
+import { useMarketplaceData } from '../api/useMarketplaceData';
+import { toWaitlistApplication } from '../api/vendorApplication';
 
 interface StoreContextType {
   // Navigation & View
@@ -52,6 +58,11 @@ interface StoreContextType {
     role?: UserRole;
   }) => Promise<CustomerUser>;
   logoutCustomer: () => void;
+  requestPasswordReset: (identifier: string) => Promise<void>;
+  checkApplicationStatus: (phone: string) => Promise<ApplicationStatusDto | null>;
+  marketplaceLoading: boolean;
+  marketplaceError: string | null;
+  cartVendor: { deliveryAvailable: boolean; pickupAvailable: boolean; deliveryFee: number; minimumOrder: number; isPaused: boolean } | null;
 
   // Modals & Panels
   isCartDrawerOpen: boolean;
@@ -191,15 +202,17 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  // Customer Authentication
-  const [currentUser, setCurrentUser] = useState<CustomerUser | null>(() => {
-    try {
-      const stored = localStorage.getItem('chop_current_user_v1');
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
-  });
+  const marketplace = useMarketplaceData();
+  const account = useCustomerAccount();
+  const liveOrders = useCustomerOrders(account.token, selectedLocation);
+  const currentUser = account.user;
+
+  const liveVendors = useMemo(
+    () => marketplace.vendors.map((vendor) => toVendor(vendor, selectedLocation)),
+    [marketplace.vendors, selectedLocation]
+  );
+  const liveMenuItems = useMemo(() => marketplace.vendors.flatMap(toMenuItems), [marketplace.vendors]);
+
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<'signin' | 'signup'>('signin');
 
@@ -213,33 +226,10 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
   const closeAuthModal = () => setIsAuthModalOpen(false);
 
-  const loginCustomer = async (emailOrPhone: string, password?: string, role: UserRole = 'customer'): Promise<CustomerUser> => {
-    // If admin credentials passed, grant admin role
-    const effectiveRole: UserRole =
-      emailOrPhone.toLowerCase().includes('admin') || password === '2026' ? 'admin' : role;
-
-    const res = await authService.login(emailOrPhone, password);
-    if (res.error) {
-      throw new Error(res.error);
-    }
-
-    const user: CustomerUser = {
-      ...res.user,
-      role: effectiveRole,
-      preferredLocation: selectedLocation,
-    };
-    setCurrentUser(user);
-    localStorage.setItem('chop_current_user_v1', JSON.stringify(user));
+  const loginCustomer = async (emailOrPhone: string, password?: string): Promise<CustomerUser> => {
+    if (!password) throw new Error('Enter your password.');
+    const user = await account.login(emailOrPhone, password);
     setIsAuthModalOpen(false);
-
-    appendAuditLog({
-      adminName: user.fullName,
-      action: 'CUSTOMER_SIGNIN',
-      targetType: 'customer',
-      targetId: user.id,
-      details: `Customer "${user.fullName}" signed in successfully.`,
-    });
-
     return user;
   };
 
@@ -251,35 +241,16 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     password?: string;
     role?: UserRole;
   }): Promise<CustomerUser> => {
-    const res = await authService.register(data);
-    if (res.error) {
-      throw new Error(res.error);
-    }
-
-    const user: CustomerUser = {
-      ...res.user,
-      role: data.role || 'customer',
-    };
-    setCurrentUser(user);
-    localStorage.setItem('chop_current_user_v1', JSON.stringify(user));
+    const user = await account.register(data);
     setIsAuthModalOpen(false);
-
-    appendAuditLog({
-      adminName: user.fullName,
-      action: 'CUSTOMER_REGISTER',
-      targetType: 'customer',
-      targetId: user.id,
-      details: `Customer account created for "${user.fullName}" (${user.email || user.phone}).`,
-    });
-
     return user;
   };
 
-  const logoutCustomer = () => {
-    authService.logout();
-    setCurrentUser(null);
-    localStorage.removeItem('chop_current_user_v1');
-  };
+  const logoutCustomer = () => account.logout();
+
+  const requestPasswordReset = (identifier: string) => account.requestPasswordReset(identifier);
+
+  const checkApplicationStatus = async (phone: string) => (await marketplaceApi.applicationStatus(phone)).application;
 
   // Modals
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
@@ -480,27 +451,22 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const submitVendorApplication = async (
     appData: Omit<VendorApplication, 'id' | 'referenceNumber' | 'status' | 'createdAt' | 'updatedAt'>
   ): Promise<VendorApplication> => {
-    const referenceNumber = `CHP-APP-${Math.floor(100000 + Math.random() * 900000)}`;
+    const result = await marketplaceApi.applyAsVendor(toWaitlistApplication(appData));
+    if (result.duplicate) {
+      throw new Error('This WhatsApp number has already applied. Check your application status below.');
+    }
+    const now = new Date().toISOString();
     const newApp: VendorApplication = {
       ...appData,
-      id: `app_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      referenceNumber,
+      id: result.id,
+      referenceNumber: result.id,
       status: 'pending',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
     };
     const updated = [newApp, ...vendorApplications];
     setVendorApplications(updated);
     localStorage.setItem(LOCAL_STORAGE_KEYS.APPLICATIONS, JSON.stringify(updated));
-
-    appendAuditLog({
-      adminName: 'System Trigger',
-      action: 'VENDOR_APPLICATION_SUBMITTED',
-      targetType: 'vendor_application',
-      targetId: newApp.id,
-      details: `Application submitted for "${newApp.businessName}" (${newApp.locationArea}) [Ref: ${referenceNumber}].`,
-    });
-
     return newApp;
   };
 
@@ -757,9 +723,16 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [cart, setCart] = useState<CartItem[]>([]);
 
   const addToCart = (item: CartItem) => {
+    const otherVendor = cart.find((entry) => entry.vendorId !== item.vendorId);
+    if (otherVendor) {
+      if (!window.confirm(`Your order has items from ${otherVendor.vendorName}. Start a new order from ${item.vendorName}?`)) return;
+      setCart([item]);
+      setSelectedVendorStorefront(null);
+      setIsCartDrawerOpen(true);
+      return;
+    }
     setCart(prev => {
-      // Check if existing item matches same menuItemId and exact options
-      const existingIndex = prev.findIndex(ci => 
+      const existingIndex = prev.findIndex(ci =>
         ci.menuItemId === item.menuItemId &&
         JSON.stringify(ci.selectedOptions) === JSON.stringify(item.selectedOptions)
       );
@@ -777,6 +750,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       }
       return [...prev, item];
     });
+    setSelectedVendorStorefront(null);
     setIsCartDrawerOpen(true);
   };
 
@@ -806,14 +780,20 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const cartSubtotal = cart.reduce((acc, item) => acc + item.itemTotal, 0);
   
-  // Strict delivery fee validation based on chosen location rules
-  const deliveryFee = cart.length > 0
-    ? (serviceAreaFees[selectedLocation] || SERVICE_LOCATIONS[selectedLocation].deliveryBaseFee)
-    : 0;
+  const cartVendorDto = cart.length > 0 ? marketplace.vendors.find((vendor) => vendor.slug === cart[0].vendorId) ?? null : null;
+  const cartVendor = cartVendorDto
+    ? {
+        deliveryAvailable: cartVendorDto.offersDelivery,
+        pickupAvailable: cartVendorDto.offersPickup,
+        deliveryFee: cartVendorDto.deliveryFee,
+        minimumOrder: cartVendorDto.minimumOrder,
+        isPaused: !cartVendorDto.canOrder,
+      }
+    : null;
+  const deliveryFee = cartVendor && cartVendor.deliveryAvailable ? cartVendor.deliveryFee : 0;
 
   const cartTotal = cartSubtotal + deliveryFee;
 
-  // Order Placement
   const placeOrder = async (orderData: {
     customerName: string;
     customerPhone: string;
@@ -830,53 +810,30 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     };
     paymentMethod: 'paystack' | 'flutterwave' | 'cash_on_delivery';
   }): Promise<Order> => {
-    if (cart.length === 0) throw new Error('Cart is empty.');
-
-    const vendorId = cart[0].vendorId;
-    const vendorName = cart[0].vendorName;
-    const calcDeliveryFee = orderData.fulfillmentType === 'delivery' 
-      ? (serviceAreaFees[orderData.locationArea] || SERVICE_LOCATIONS[orderData.locationArea].deliveryBaseFee)
-      : 0;
-
-    const newOrder: Order = {
-      id: `ord_${Date.now()}`,
-      orderNumber: `CHP-${Math.floor(100000 + Math.random() * 900000)}`,
-      customerId: `cust_${orderData.customerPhone}`,
-      customerName: orderData.customerName,
-      customerPhone: orderData.customerPhone,
-      customerEmail: orderData.customerEmail,
-      vendorId,
-      vendorName,
-      locationArea: orderData.locationArea,
-      fulfillmentType: orderData.fulfillmentType,
-      deliveryDetails: orderData.deliveryDetails,
-      items: [...cart],
-      subtotal: cartSubtotal,
-      deliveryFee: calcDeliveryFee,
-      total: cartSubtotal + calcDeliveryFee,
-      status: 'pending_acceptance',
-      paymentMethod: orderData.paymentMethod,
-      paymentStatus: orderData.paymentMethod === 'cash_on_delivery' ? 'unpaid' : 'verified',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    const updated = [newOrder, ...orders];
-    setOrders(updated);
-    localStorage.setItem(LOCAL_STORAGE_KEYS.ORDERS, JSON.stringify(updated));
+    if (cart.length === 0) throw new Error('Your cart is empty.');
+    const instructions = cart
+      .filter((item) => item.specialInstructions?.trim())
+      .map((item) => `${item.name}: ${item.specialInstructions?.trim()}`);
+    const result = await marketplaceApi.placeOrder(
+      cart[0].vendorId,
+      {
+        customerName: orderData.customerName,
+        customerPhone: orderData.customerPhone,
+        customerEmail: orderData.customerEmail,
+        fulfilment: orderData.fulfillmentType === 'delivery' ? 'DELIVERY' : 'PICKUP',
+        address: orderData.deliveryDetails ? deliveryAddressText(orderData.deliveryDetails) : '',
+        note: instructions.join('; ').slice(0, 300),
+        items: cart.map((item) => ({ itemId: item.menuItemId, quantity: item.quantity })),
+      },
+      account.token ?? undefined
+    );
+    if (!result.order) throw new Error('Could not place your order. Please try again.');
+    liveOrders.addPlaced(result.order);
+    const placed = toOrder({ ...result.order, customerPhone: orderData.customerPhone }, orderData.locationArea);
     clearCart();
-    setActiveOrderToTrack(newOrder);
+    setActiveOrderToTrack(placed);
     setIsOrderTrackerOpen(true);
-
-    appendAuditLog({
-      adminName: 'Order Engine',
-      action: 'ORDER_PLACED',
-      targetType: 'order',
-      targetId: newOrder.id,
-      details: `Order #${newOrder.orderNumber} placed for ${newOrder.customerName} (Total: ₦${newOrder.total}).`,
-    });
-
-    return newOrder;
+    return placed;
   };
 
   const updateOrderStatus = (orderId: string, status: OrderStatus, reason?: string) => {
@@ -908,6 +865,12 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   const saveAddress = (address: Omit<CustomerAddress, 'id'>) => {
+    if (account.token) {
+      void account.saveAddress(address).catch((error: unknown) => {
+        window.alert(error instanceof Error ? error.message : 'Could not save this address.');
+      });
+      return;
+    }
     const newAddress: CustomerAddress = {
       ...address,
       id: `addr_${Date.now()}`,
@@ -918,10 +881,28 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   const deleteAddress = (id: string) => {
+    if (account.token) {
+      void account.deleteAddress(id).catch(() => undefined);
+      return;
+    }
     const updated = savedAddresses.filter(a => a.id !== id);
     setSavedAddresses(updated);
     localStorage.setItem(LOCAL_STORAGE_KEYS.ADDRESSES, JSON.stringify(updated));
   };
+
+  const reloadOrders = liveOrders.reload;
+
+  useEffect(() => {
+    setActiveOrderToTrack((current) => {
+      if (!current) return current;
+      const latest = liveOrders.orders.find((order) => order.id === current.id);
+      return latest && latest.status !== current.status ? { ...latest, customerPhone: current.customerPhone } : current;
+    });
+  }, [liveOrders.orders]);
+
+  useEffect(() => {
+    if (isOrderTrackerOpen) reloadOrders();
+  }, [isOrderTrackerOpen, reloadOrders]);
 
   return (
     <StoreContext.Provider
@@ -944,6 +925,11 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         loginCustomer,
         registerCustomer,
         logoutCustomer,
+        requestPasswordReset,
+        checkApplicationStatus,
+        marketplaceLoading: marketplace.loading,
+        marketplaceError: marketplace.error,
+        cartVendor,
         isCartDrawerOpen,
         setIsCartDrawerOpen,
         isAccountModalOpen,
@@ -964,8 +950,8 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         vendorApplications,
         submitVendorApplication,
         updateApplicationStatus,
-        approvedVendors,
-        menuItems,
+        approvedVendors: liveVendors,
+        menuItems: liveMenuItems,
         addMenuItem,
         updateMenuItemAvailability,
         toggleVendorPauseStore,
@@ -987,10 +973,10 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         cartSubtotal,
         deliveryFee,
         cartTotal,
-        orders,
+        orders: liveOrders.orders,
         placeOrder,
         updateOrderStatus,
-        savedAddresses,
+        savedAddresses: account.token ? account.addresses : savedAddresses,
         saveAddress,
         deleteAddress,
         auditLogs,

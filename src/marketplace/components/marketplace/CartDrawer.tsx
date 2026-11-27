@@ -30,6 +30,8 @@ export const CartDrawer: React.FC = () => {
     cartTotal,
     selectedLocation,
     placeOrder,
+    cartVendor,
+    currentUser,
   } = useStore();
 
   const [fulfillmentType, setFulfillmentType] = useState<'delivery' | 'pickup'>('delivery');
@@ -38,23 +40,26 @@ export const CartDrawer: React.FC = () => {
   );
 
   // Form Fields
-  const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
-  const [customerEmail, setCustomerEmail] = useState('');
+  const [customerName, setCustomerName] = useState(currentUser?.fullName ?? '');
+  const [customerPhone, setCustomerPhone] = useState(currentUser?.phone ?? '');
+  const [customerEmail, setCustomerEmail] = useState(currentUser?.email ?? '');
   const [street, setStreet] = useState('');
   const [hostelOrBuilding, setHostelOrBuilding] = useState('');
   const [landmark, setLandmark] = useState('');
   const [directions, setDirections] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'paystack' | 'flutterwave' | 'cash_on_delivery'>('cash_on_delivery');
+  const paymentMethod = 'cash_on_delivery' as const;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
+  const canDeliver = cartVendor ? cartVendor.deliveryAvailable : true;
+  const canPickup = cartVendor ? cartVendor.pickupAvailable : true;
+  const effectiveFulfilment: 'delivery' | 'pickup' =
+    fulfillmentType === 'delivery' && !canDeliver ? 'pickup' : fulfillmentType === 'pickup' && !canPickup ? 'delivery' : fulfillmentType;
+
   if (!isCartDrawerOpen) return null;
 
-  const currentDeliveryCharge = fulfillmentType === 'delivery' 
-    ? SERVICE_LOCATIONS[orderLocation].deliveryBaseFee 
-    : 0;
+  const currentDeliveryCharge = effectiveFulfilment === 'delivery' ? deliveryFee : 0;
   const currentTotal = cartSubtotal + currentDeliveryCharge;
 
   const handleCheckout = async (e: React.FormEvent) => {
@@ -71,7 +76,17 @@ export const CartDrawer: React.FC = () => {
       return;
     }
 
-    if (fulfillmentType === 'delivery') {
+    if (cartVendor?.isPaused) {
+      setErrorMsg('This food spot is not taking orders right now. Please try again later.');
+      return;
+    }
+
+    if (cartVendor && cartSubtotal < cartVendor.minimumOrder) {
+      setErrorMsg(`The minimum order here is ${formatNaira(cartVendor.minimumOrder)}.`);
+      return;
+    }
+
+    if (effectiveFulfilment === 'delivery') {
       if (!street.trim() || !landmark.trim()) {
         setErrorMsg('Please provide your street/address and a recognisable landmark for delivery.');
         return;
@@ -83,10 +98,10 @@ export const CartDrawer: React.FC = () => {
       await placeOrder({
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
-        customerEmail: customerEmail.trim() || `${customerPhone.trim()}@customer.chop.ng`,
-        fulfillmentType,
+        customerEmail: customerEmail.trim(),
+        fulfillmentType: effectiveFulfilment,
         locationArea: orderLocation,
-        deliveryDetails: fulfillmentType === 'delivery' ? {
+        deliveryDetails: effectiveFulfilment === 'delivery' ? {
           street: street.trim(),
           hostelOrBuilding: hostelOrBuilding.trim() || undefined,
           landmark: landmark.trim(),
@@ -248,8 +263,9 @@ export const CartDrawer: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setFulfillmentType('delivery')}
-                    className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-all ${
-                      fulfillmentType === 'delivery'
+                    disabled={!canDeliver}
+                    className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                      effectiveFulfilment === 'delivery'
                         ? 'bg-[#141414] text-white border-[#141414]'
                         : 'bg-white text-[#191919] border-[#E6E2DA]'
                     }`}
@@ -259,8 +275,9 @@ export const CartDrawer: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setFulfillmentType('pickup')}
-                    className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-all ${
-                      fulfillmentType === 'pickup'
+                    disabled={!canPickup}
+                    className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                      effectiveFulfilment === 'pickup'
                         ? 'bg-[#141414] text-white border-[#141414]'
                         : 'bg-white text-[#191919] border-[#E6E2DA]'
                     }`}
@@ -331,7 +348,7 @@ export const CartDrawer: React.FC = () => {
                 </div>
 
                 {/* Specific Delivery Address Fields (only for delivery) */}
-                {fulfillmentType === 'delivery' && (
+                {effectiveFulfilment === 'delivery' && (
                   <div className="space-y-2.5 p-3 rounded-2xl bg-white border border-[#E6E2DA]">
                     <div>
                       <label className="block text-xs font-semibold text-[#191919] mb-1">
@@ -376,39 +393,11 @@ export const CartDrawer: React.FC = () => {
                   </div>
                 )}
 
-                {/* Payment Options */}
-                <div>
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-[#77736C] mb-1">
-                    Payment Method
-                  </label>
-                  <div className="space-y-1.5">
-                    <label className="flex items-center gap-2 p-2.5 rounded-xl bg-white border border-[#E6E2DA] cursor-pointer text-xs">
-                      <input
-                        type="radio"
-                        name="payment"
-                        checked={paymentMethod === 'cash_on_delivery'}
-                        onChange={() => setPaymentMethod('cash_on_delivery')}
-                        className="text-[#C45B3A]"
-                      />
-                      <span className="font-semibold text-[#191919]">Pay on Delivery / Collection</span>
-                    </label>
-
-                    <label className="flex items-center justify-between p-2.5 rounded-xl bg-white border border-[#E6E2DA] cursor-pointer text-xs">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="radio"
-                          name="payment"
-                          checked={paymentMethod === 'paystack'}
-                          onChange={() => setPaymentMethod('paystack')}
-                          className="text-[#C45B3A]"
-                        />
-                        <span className="font-medium text-[#191919]">Paystack (Card / Bank Transfer)</span>
-                      </div>
-                      <span className="text-[10px] text-[#77736C] bg-[#F0EEE8] px-1.5 py-0.5 rounded">
-                        Integration Ready
-                      </span>
-                    </label>
-                  </div>
+                <div className="p-3 rounded-xl bg-white border border-[#E6E2DA] text-xs text-[#191919]">
+                  <p className="font-semibold">Pay the vendor directly</p>
+                  <p className="text-[#77736C] mt-0.5">
+                    Once the vendor accepts, you will see how to pay them: transfer or cash on delivery or pickup.
+                  </p>
                 </div>
 
                 {/* Pricing Summary */}
@@ -419,7 +408,7 @@ export const CartDrawer: React.FC = () => {
                   </div>
                   <div className="flex justify-between text-[#77736C]">
                     <span>
-                      {fulfillmentType === 'delivery' ? `Delivery Fee (${SERVICE_LOCATIONS[orderLocation].name})` : 'Pickup'}
+                      {effectiveFulfilment === 'delivery' ? `Delivery Fee (${SERVICE_LOCATIONS[orderLocation].name})` : 'Pickup'}
                     </span>
                     <span>{formatNaira(currentDeliveryCharge)}</span>
                   </div>

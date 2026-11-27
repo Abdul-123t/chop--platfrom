@@ -8,6 +8,7 @@ import { Toggle } from '../../../components/ui/Toggle';
 import { fieldClass, mutedText } from '../../../components/ui/styles';
 import { useAuthorizedAction } from '../../../hooks/useAuthorizedAction';
 import { vendorApi } from '../../../services/api/vendor';
+import { FOOD_TYPES } from '../../../utils/foodTypes';
 import { parseNaira } from '../../../utils/money';
 import type { MenuCategory, MenuItem, MenuItemInput } from '../../types';
 import { useVendor } from '../../VendorContext';
@@ -32,9 +33,10 @@ function initialDraft(target: EditorTarget): MenuItemInput {
       categoryId: item.categoryId,
       available: item.available,
       imageUrl: item.imageUrl || null,
+      foodType: item.foodType,
     };
   }
-  return { name: '', description: '', price: 0, categoryId: target.categoryId, available: true, imageUrl: null };
+  return { name: '', description: '', price: 0, categoryId: target.categoryId, available: true, imageUrl: null, foodType: null };
 }
 
 export function MenuItemEditor({ target, categories, onClose, onSaved }: MenuItemEditorProps) {
@@ -146,6 +148,21 @@ export function MenuItemEditor({ target, categories, onClose, onSaved }: MenuIte
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Show under" htmlFor="item-food-type" hint="Where customers find this dish on the CHOP home page.">
+          <select
+            id="item-food-type"
+            value={draft.foodType ?? ''}
+            onChange={(event) => update({ foodType: event.target.value || null })}
+            className={fieldClass}
+          >
+            <option value="">Not listed on the home page</option>
+            {FOOD_TYPES.map((type) => (
+              <option key={type.slug} value={type.slug}>
+                {type.label}
               </option>
             ))}
           </select>

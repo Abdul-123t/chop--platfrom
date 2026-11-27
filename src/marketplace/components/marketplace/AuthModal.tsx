@@ -11,6 +11,7 @@ export const AuthModal: React.FC = () => {
     closeAuthModal,
     loginCustomer,
     registerCustomer,
+    requestPasswordReset,
     selectedLocation,
     setActiveView,
   } = useStore();
@@ -60,6 +61,10 @@ export const AuthModal: React.FC = () => {
       setError('Please provide your registered email address or phone number.');
       return;
     }
+    if (!signInPassword) {
+      setError('Please enter your password.');
+      return;
+    }
     try {
       setIsLoading(true);
       await loginCustomer(signInIdentifier.trim(), signInPassword || undefined);
@@ -86,7 +91,15 @@ export const AuthModal: React.FC = () => {
       setError('Please enter a valid Nigerian phone number (10–11 digits).');
       return;
     }
-    if (createPassword && confirmPassword && createPassword !== confirmPassword) {
+    if (!phone.trim()) {
+      setError('Please enter your phone number. Vendors use it to reach you about orders.');
+      return;
+    }
+    if (createPassword.length < 8) {
+      setError('Choose a password with at least 8 characters.');
+      return;
+    }
+    if (createPassword !== confirmPassword) {
       setError('Passwords do not match. Please re-enter.');
       return;
     }
@@ -111,17 +124,22 @@ export const AuthModal: React.FC = () => {
     }
   };
 
-  const handleForgotPassword = (e: React.FormEvent) => {
+  const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!forgotIdentifier.trim()) {
       setError('Please enter the email or phone number associated with your account.');
       return;
     }
+    setError('');
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await requestPasswordReset(forgotIdentifier.trim());
       setForgotSuccess(true);
-    }, 600);
+    } catch (err: any) {
+      setError(err.message || 'Could not send the reset link. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const inputClass =
@@ -423,7 +441,7 @@ export const AuthModal: React.FC = () => {
                   </div>
                   <h4 className="font-display font-bold text-sm text-[#141414]">Password Reset Sent</h4>
                   <p className="text-xs text-[#77736C]">
-                    If an account exists for <strong className="text-[#191919]">{forgotIdentifier}</strong>, instructions have been sent via SMS/Email.
+                    If an account exists for <strong className="text-[#191919]">{forgotIdentifier}</strong>, a reset link has been sent to its email. Check your inbox and spam folder.
                   </p>
                   <button
                     type="button"

@@ -4,6 +4,7 @@ import { ADMIN_PATH, DIRECTORY_PATH, UNSUBSCRIBE_PATH, VENDOR_PATH, WAITLIST_PAT
 
 const MarketplaceRoot = lazy(() => import('./marketplace/MarketplaceRoot'));
 const WaitlistSite = lazy(() => import('./App'));
+const ResetPasswordPage = lazy(() => import('./marketplace/pages/ResetPasswordPage'));
 const AdminApp = lazy(() => import('./admin/AdminApp'));
 const VendorApp = lazy(() => import('./vendor/VendorApp'));
 const UnsubscribePage = lazy(() => import('./pages/UnsubscribePage'));
@@ -42,6 +43,14 @@ export function Root() {
     return (
       <Lazy>
         <UnsubscribePage />
+      </Lazy>
+    );
+  }
+
+  if (path === '/account/reset') {
+    return (
+      <Lazy>
+        <ResetPasswordPage />
       </Lazy>
     );
   }

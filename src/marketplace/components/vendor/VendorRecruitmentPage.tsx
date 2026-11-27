@@ -18,6 +18,7 @@ import { SERVICE_LOCATIONS, VENDOR_TYPES } from '../../lib/constants';
 export const VendorRecruitmentPage: React.FC = () => {
   const {
     submitVendorApplication,
+    checkApplicationStatus,
     vendorApplications,
     setActiveView,
     selectedLocation,
@@ -95,19 +96,35 @@ export const VendorRecruitmentPage: React.FC = () => {
     }
   };
 
-  const handleCheckStatus = (e: React.FormEvent) => {
+  const handleCheckStatus = async (e: React.FormEvent) => {
     e.preventDefault();
-    const query = checkPhoneOrEmail.trim().toLowerCase();
+    const query = checkPhoneOrEmail.trim();
     if (!query) return;
-
-    const matched = vendorApplications.find(
-      a =>
-        a.referenceNumber?.toLowerCase() === query ||
-        a.phone.includes(query) ||
-        a.email.toLowerCase() === query ||
-        a.id.toLowerCase() === query
-    );
-    setFoundApplication(matched || 'not_found');
+    if (query.replace(/\D/g, '').length < 10) {
+      setFoundApplication('not_found');
+      return;
+    }
+    try {
+      const result = await checkApplicationStatus(query);
+      if (!result) {
+        setFoundApplication('not_found');
+        return;
+      }
+      const local = vendorApplications.find((app) => app.referenceNumber === result.reference);
+      setFoundApplication({
+        id: result.reference,
+        referenceNumber: result.reference,
+        businessName: result.businessName,
+        status: result.status,
+        createdAt: result.submittedAt,
+        locationArea: local?.locationArea,
+        businessCategory: local?.businessCategory ?? 'Food business',
+        specificAddress: local?.specificAddress ?? 'your business address',
+        accountReady: result.accountReady,
+      });
+    } catch {
+      setFoundApplication('not_found');
+    }
   };
 
   return (
@@ -477,6 +494,10 @@ export const VendorRecruitmentPage: React.FC = () => {
                   />
                 </div>
 
+                <p className="text-[11px] text-[#77736C]">
+                  By submitting, you agree that CHOP can contact you on WhatsApp or email about your application.
+                </p>
+
                 <button
                   type="submit"
                   disabled={isSubmitting}
@@ -500,7 +521,7 @@ export const VendorRecruitmentPage: React.FC = () => {
               Track Application Status
             </h3>
             <p className="text-xs text-[#77736C]">
-              Already submitted an application? Enter your phone number, email, or application ID to check your verification progress.
+              Already submitted an application? Enter the WhatsApp number you applied with to check your verification progress.
             </p>
 
             <form onSubmit={handleCheckStatus} className="flex gap-2">
@@ -508,7 +529,7 @@ export const VendorRecruitmentPage: React.FC = () => {
                 type="text"
                 value={checkPhoneOrEmail}
                 onChange={(e) => setCheckPhoneOrEmail(e.target.value)}
-                placeholder="Enter Reference Number (CHP-APP-...), Phone or Email"
+                placeholder="WhatsApp number, e.g. 0801 234 5678"
                 className="flex-1 px-3.5 py-2.5 rounded-xl bg-[#F7F6F2] border border-[#E6E2DA] text-xs text-[#191919] focus:outline-none"
               />
               <button
@@ -521,7 +542,7 @@ export const VendorRecruitmentPage: React.FC = () => {
 
             {foundApplication === 'not_found' && (
               <p className="text-xs text-red-600 bg-red-50 p-3 rounded-xl border border-red-200">
-                No application found matching that query. Please confirm your Reference Number (CHP-APP-...) or phone number.
+                No application found for that number. Use the same WhatsApp number you applied with.
               </p>
             )}
 
@@ -550,18 +571,22 @@ export const VendorRecruitmentPage: React.FC = () => {
                 </div>
                 
                 <p className="text-[#77736C]">
-                  Hub: {SERVICE_LOCATIONS[foundApplication.locationArea as LocationArea]?.name} &bull; Type: {foundApplication.businessCategory} &bull; Submitted: {new Date(foundApplication.createdAt).toLocaleDateString()}
+                  {foundApplication.locationArea ? `Hub: ${SERVICE_LOCATIONS[foundApplication.locationArea as LocationArea]?.name} \u2022 ` : ''}Type: {foundApplication.businessCategory} &bull; Submitted: {new Date(foundApplication.createdAt).toLocaleDateString()}
                 </p>
 
                 {foundApplication.status === 'approved' && (
                   <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs">
                     <p className="font-bold">Congratulations! Your kitchen application is approved.</p>
-                    <p className="mt-0.5">You can now proceed to the Vendor Workspace to set up your food menu and activate your storefront.</p>
+                    <p className="mt-0.5">
+                      {foundApplication.accountReady
+                        ? 'Your vendor account is ready. Use the setup link we sent you, then sign in to set up your menu and go live.'
+                        : 'We will send your setup link on WhatsApp or email shortly. After that you can sign in to set up your menu.'}
+                    </p>
                     <button
                       onClick={() => setActiveView('vendor-workspace')}
                       className="mt-2 py-1.5 px-3 rounded-lg bg-emerald-700 text-white font-semibold text-[11px] hover:bg-emerald-800"
                     >
-                      Open Kitchen Workspace &rarr;
+                      Open vendor portal &rarr;
                     </button>
                   </div>
                 )}

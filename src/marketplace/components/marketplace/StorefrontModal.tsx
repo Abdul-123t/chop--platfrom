@@ -111,7 +111,7 @@ export const StorefrontModal: React.FC = () => {
               <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-white/70">
                 <span className="flex items-center gap-1">
                   <MapPin className="w-3.5 h-3.5 text-[#C45B3A]" />
-                  {vendor.address} ({vendor.landmark})
+                  {vendor.address}{vendor.landmark ? ` (${vendor.landmark})` : ''}
                 </span>
                 <span className="flex items-center gap-1">
                   <Clock className="w-3.5 h-3.5" />

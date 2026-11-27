@@ -88,6 +88,7 @@ export interface MenuItem {
   description: string;
   price: number;
   imageUrl: string;
+  foodType: string | null;
   available: boolean;
   position: number;
 }
@@ -99,6 +100,7 @@ export interface MenuItemInput {
   categoryId: string | null;
   available: boolean;
   imageUrl: string | null;
+  foodType: string | null;
 }
 
 export interface VendorMenu {
