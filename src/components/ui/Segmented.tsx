@@ -16,7 +16,7 @@ export function Segmented<T extends string>({ label, value, options, onChange }:
     <div
       role="radiogroup"
       aria-label={label}
-      className="inline-flex flex-wrap gap-1 p-1 rounded-full bg-[#0E0D0B]/8 dark:bg-white/[0.06] border border-[#0E0D0B]/8 dark:border-white/[0.06]"
+      className="inline-flex flex-wrap max-w-full gap-1 p-1 rounded-[18px] bg-[#0E0D0B]/8 dark:bg-white/[0.06] border border-[#0E0D0B]/8 dark:border-white/[0.06]"
     >
       {options.map((option) => {
         const active = option.value === value;

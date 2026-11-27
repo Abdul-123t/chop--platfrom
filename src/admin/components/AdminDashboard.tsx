@@ -8,6 +8,7 @@ import { useAdminEvents } from '../hooks/useAdminEvents';
 import { useAdminQuery } from '../hooks/useAdminQuery';
 import type { AdminTab, AudienceKind, Subscriber } from '../types';
 import { AdminHeader } from './AdminHeader';
+import { AdminSidebar } from './AdminSidebar';
 import { NewsletterView } from './NewsletterView';
 import { SubscriberDetailPanel } from './SubscriberDetailPanel';
 import { SubscribersView } from './SubscribersView';
@@ -25,6 +26,8 @@ export function AdminDashboard({ token, onLogout }: AdminDashboardProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [audienceKind, setAudienceKind] = useState<AudienceKind>('all');
   const [openId, setOpenId] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
   const [historyVersion, setHistoryVersion] = useState(0);
   const overview = useAdminQuery(token, adminApi.subscribers, onLogout);
   const refreshTimer = useRef<number | undefined>(undefined);
@@ -80,9 +83,18 @@ export function AdminDashboard({ token, onLogout }: AdminDashboardProps) {
         theme={theme}
         onToggleTheme={toggleTheme}
         onLogout={onLogout}
+        onOpenMenu={() => setMenuOpen(true)}
         liveStatus={liveStatus}
       />
-      <main className="max-w-[1200px] mx-auto px-4 py-4 space-y-3">
+      <AdminSidebar
+        open={menuOpen}
+        onClose={closeMenu}
+        tab={tab}
+        onTabChange={setTab}
+        liveStatus={liveStatus}
+        onLogout={onLogout}
+      />
+      <main className="max-w-[1200px] mx-auto px-3 sm:px-4 py-4 space-y-3">
         {overview.error && <Alert tone="error">{overview.error}</Alert>}
         {!overview.data && overview.loading && (
           <div className={`py-10 text-center text-[13px] ${mutedText}`}>Loading waitlist…</div>

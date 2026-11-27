@@ -6,6 +6,7 @@ import { plural } from '../utils/format';
 import { filterSubscribers, type SubscriberFilters } from '../utils/subscribers';
 import { StatsBar } from './StatsBar';
 import { SubscriberFiltersBar } from './SubscriberFiltersBar';
+import { SubscriberList } from './SubscriberList';
 import { SubscriberTable } from './SubscriberTable';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
@@ -59,6 +60,8 @@ export function SubscribersView({
     onSelectedChange(next);
   };
 
+  const rowProps = { subscribers: shown, selected, onToggle: toggle, onToggleAll: toggleAll, onOpen };
+
   const exportRows = selected.size > 0 ? overview.subscribers.filter((s) => selected.has(s.id)) : filtered;
 
   return (
@@ -109,13 +112,18 @@ export function SubscribersView({
           <div className={`text-[12px] ${mutedText}`}>
             Showing {plural(shown.length, 'person')} of {filtered.length.toLocaleString()}
           </div>
-          <SubscriberTable
-            subscribers={shown}
-            selected={selected}
-            onToggle={toggle}
-            onToggleAll={toggleAll}
-            onOpen={onOpen}
-          />
+          {shown.length === 0 ? (
+            <div className={`py-8 text-center text-[13px] ${mutedText}`}>No one matches these filters.</div>
+          ) : (
+            <>
+              <div className="hidden md:block">
+                <SubscriberTable {...rowProps} />
+              </div>
+              <div className="md:hidden">
+                <SubscriberList {...rowProps} />
+              </div>
+            </>
+          )}
           {filtered.length > shown.length && (
             <div className="flex justify-center">
               <Button variant="secondary" onClick={() => setLimit((value) => value + PAGE_SIZE)}>

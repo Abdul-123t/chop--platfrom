@@ -80,7 +80,7 @@ export function NewsletterView({
   };
 
   return (
-    <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] [&>*]:min-w-0">
       <Card title="Compose newsletter">
         <div className="space-y-3">
           <AudiencePicker
@@ -150,7 +150,7 @@ export function NewsletterView({
               placeholder="you@example.com"
               value={testEmail}
               onChange={(event) => setTestEmail(event.target.value)}
-              className={`${fieldClass} flex-1 min-w-[180px]`}
+              className={`${fieldClass} flex-1 min-w-0 basis-[180px]`}
             />
             <Button
               variant="secondary"
