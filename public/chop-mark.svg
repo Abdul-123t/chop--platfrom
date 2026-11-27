@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <rect width="48" height="48" rx="12" fill="#141414"/>
+  <!-- Elegant bowl contour -->
+  <path d="M12 24C12 30.6274 17.3726 36 24 36C30.6274 36 36 30.6274 36 24H12Z" fill="#F7F6F2"/>
+  <!-- Accent steam swirl -->
+  <path d="M21 15C20.5 17 21.5 19 22 20" stroke="#C45B3A" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M27 13C26.5 15.5 27.8 17.5 28 19.5" stroke="#C45B3A" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

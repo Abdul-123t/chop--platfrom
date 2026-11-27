@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import '../index.css';
 import { CheckCircle2, MailX } from 'lucide-react';
 import { Alert } from '../components/ui/Alert';
 import { Button } from '../components/ui/Button';

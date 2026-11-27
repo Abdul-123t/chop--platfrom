@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import '../../index.css';
 import { Moon, Store, Sun } from 'lucide-react';
 import { Wordmark } from '../../components/ui/Wordmark';
 import { mutedText } from '../../components/ui/styles';
@@ -16,9 +17,9 @@ export function StoreLayout({ children }: { children: ReactNode }) {
     <div className="app-shell min-h-screen overflow-x-clip flex flex-col bg-[#F7F1E8] dark:bg-[#0E0D0B] text-[#0E0D0B] dark:text-[#F7F1E8] text-[14px]">
       <header className="sticky top-0 z-30 bg-[#F7F1E8]/90 dark:bg-[#0E0D0B]/90 backdrop-blur-xl border-b border-[#0E0D0B]/10 dark:border-white/[0.08]">
         <div className="max-w-[1100px] mx-auto px-4 h-14 flex items-center justify-between gap-3">
-          <Link to="/" aria-label="CHOP home">
+          <a href="/" aria-label="CHOP home">
             <Wordmark />
-          </Link>
+          </a>
           <div className="flex items-center gap-1.5">
             <Link
               to={DIRECTORY_PATH}

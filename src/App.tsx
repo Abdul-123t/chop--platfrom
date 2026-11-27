@@ -1,4 +1,5 @@
 import { lazy, useState } from 'react';
+import './index.css';
 import { DeferredSection } from './components/DeferredSection';
 import { Hero } from './components/Hero';
 import { Navbar } from './components/Navbar';

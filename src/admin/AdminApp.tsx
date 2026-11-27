@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import '../index.css';
 import { AdminDashboard } from './components/AdminDashboard';
 import { LoginView } from './components/LoginView';
 import { mutedText } from '../components/ui/styles';

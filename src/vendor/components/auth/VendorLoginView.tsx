@@ -40,7 +40,7 @@ export function VendorLoginView({ onLogin }: VendorLoginViewProps) {
       footer={
         <>
           Not on CHOP yet?{' '}
-          <Link to="/#waitlist" className="font-semibold text-[#E8772E] hover:underline">
+          <Link to="/waitlist#waitlist" className="font-semibold text-[#E8772E] hover:underline">
             Apply as a vendor
           </Link>
         </>

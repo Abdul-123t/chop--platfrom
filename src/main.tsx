@@ -1,6 +1,5 @@
 import {createRoot} from 'react-dom/client';
 import { Root } from './Root.tsx';
-import './index.css';
 
 const updateAnimationVisibility = () => {
   document.documentElement.classList.toggle('tab-hidden', document.hidden);

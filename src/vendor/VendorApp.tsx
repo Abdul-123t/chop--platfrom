@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import '../index.css';
 import { mutedText } from '../components/ui/styles';
 import { useTheme } from '../hooks/useTheme';
 import { useLocation } from '../router/navigation';

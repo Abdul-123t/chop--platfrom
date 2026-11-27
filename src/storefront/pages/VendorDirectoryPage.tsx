@@ -54,7 +54,7 @@ export default function VendorDirectoryPage() {
             title={search ? 'No matches' : 'Vendors are joining CHOP'}
             action={
               !search && (
-                <Link to="/#waitlist" className="text-[13px] font-semibold text-[#E8772E] hover:underline">
+                <Link to="/waitlist#waitlist" className="text-[13px] font-semibold text-[#E8772E] hover:underline">
                   Join the waitlist to hear first
                 </Link>
               )

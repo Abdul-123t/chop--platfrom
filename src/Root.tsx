@@ -1,8 +1,9 @@
 import { lazy, Suspense, type ReactNode } from 'react';
-import App from './App.tsx';
 import { matchPath, useLocation } from './router/navigation';
-import { ADMIN_PATH, DIRECTORY_PATH, UNSUBSCRIBE_PATH, VENDOR_PATH } from './services/api/env';
+import { ADMIN_PATH, DIRECTORY_PATH, UNSUBSCRIBE_PATH, VENDOR_PATH, WAITLIST_PATH } from './services/api/env';
 
+const MarketplaceRoot = lazy(() => import('./marketplace/MarketplaceRoot'));
+const WaitlistSite = lazy(() => import('./App'));
 const AdminApp = lazy(() => import('./admin/AdminApp'));
 const VendorApp = lazy(() => import('./vendor/VendorApp'));
 const UnsubscribePage = lazy(() => import('./pages/UnsubscribePage'));
@@ -45,6 +46,14 @@ export function Root() {
     );
   }
 
+  if (path === WAITLIST_PATH) {
+    return (
+      <Lazy>
+        <WaitlistSite />
+      </Lazy>
+    );
+  }
+
   if (path === DIRECTORY_PATH) {
     return (
       <Lazy>
@@ -71,5 +80,9 @@ export function Root() {
     );
   }
 
-  return <App />;
+  return (
+    <Lazy>
+      <MarketplaceRoot />
+    </Lazy>
+  );
 }

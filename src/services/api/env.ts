@@ -12,6 +12,8 @@ export const UNSUBSCRIBE_PATH = '/unsubscribe';
 
 export const VENDOR_PATH = '/vendor';
 
+export const WAITLIST_PATH = '/waitlist';
+
 export const DIRECTORY_PATH = '/vendors';
 
 export function apiUrl(path: string): string {
