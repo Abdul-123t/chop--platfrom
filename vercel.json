@@ -6,6 +6,7 @@
     { "source": "/vendor/:path*", "destination": "/index.html" },
     { "source": "/vendors", "destination": "/index.html" },
     { "source": "/waitlist", "destination": "/index.html" },
+    { "source": "/account", "destination": "/index.html" },
     { "source": "/account/reset", "destination": "/index.html" },
     { "source": "/v/:slug", "destination": "/index.html" },
     { "source": "/order/:id", "destination": "/index.html" },

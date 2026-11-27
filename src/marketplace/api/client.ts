@@ -60,6 +60,30 @@ export const marketplaceApi = {
     return apiRequest<{ deleted: boolean }>(`/api/customer/addresses/${id(addressId)}`, { method: 'DELETE', token });
   },
 
+  updateProfile(token: string, update: Partial<Pick<CustomerDto, 'fullName' | 'email' | 'phone' | 'preferredArea'>>) {
+    return apiRequest<{ customer: CustomerDto }>('/api/customer/profile', { method: 'PATCH', token, body: update });
+  },
+
+  changePassword(token: string, currentPassword: string, newPassword: string) {
+    return apiRequest<CustomerSessionDto>('/api/customer/password', {
+      method: 'POST',
+      token,
+      body: { currentPassword, newPassword },
+    });
+  },
+
+  updateAddress(token: string, addressId: string, update: Partial<Omit<CustomerAddressDto, 'id'>>) {
+    return apiRequest<{ address: CustomerAddressDto }>(`/api/customer/addresses/${id(addressId)}`, {
+      method: 'PATCH',
+      token,
+      body: update,
+    });
+  },
+
+  cancelOrder(orderId: string) {
+    return apiRequest<{ order: OrderDto }>(`/api/orders/${id(orderId)}/cancel`, { method: 'POST' });
+  },
+
   applyAsVendor(payload: Record<string, unknown>) {
     return apiRequest<{ id: string; duplicate: boolean }>('/api/waitlist', { method: 'POST', body: payload });
   },

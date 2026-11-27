@@ -71,7 +71,7 @@ export function toMenuItems(dto: MarketplaceVendorDto): MenuItem[] {
 function toCartItems(dto: OrderDto): CartItem[] {
   return dto.items.map((line, index) => ({
     cartItemId: `${dto.id}-${index}`,
-    menuItemId: '',
+    menuItemId: line.menuItemId ?? '',
     vendorId: dto.vendor.slug,
     vendorName: dto.vendor.businessName,
     name: line.name,
@@ -108,6 +108,12 @@ export function toOrder(dto: OrderDto, area: LocationArea): Order {
     paymentStatus: 'unpaid',
     createdAt: dto.createdAt,
     updatedAt: dto.acceptedAt || dto.createdAt,
+    vendorPhone: dto.vendor.phone,
+    paymentNote: dto.paymentNote,
+    note: dto.note ?? '',
+    prepTimeMinutes: dto.prepTimeMinutes,
+    deliveryAddress: dto.address ?? '',
+    pickupAddress: dto.vendor.address,
   };
 }
 

@@ -25,10 +25,20 @@ import { useCustomerOrders } from '../api/useCustomerOrders';
 import { useMarketplaceData } from '../api/useMarketplaceData';
 import { toWaitlistApplication } from '../api/vendorApplication';
 
+export type AppView = 'marketplace' | 'for-vendors' | 'vendor-workspace' | 'admin-control' | 'account';
+
+export type AccountTab = 'overview' | 'orders' | 'addresses' | 'profile';
+
+const ACCOUNT_PATH = '/account';
+
+function viewFromPath(): AppView {
+  return window.location.pathname.replace(/\/+$/, '') === ACCOUNT_PATH ? 'account' : 'marketplace';
+}
+
 interface StoreContextType {
   // Navigation & View
-  activeView: 'marketplace' | 'for-vendors' | 'vendor-workspace' | 'admin-control';
-  setActiveView: (view: 'marketplace' | 'for-vendors' | 'vendor-workspace' | 'admin-control') => void;
+  activeView: AppView;
+  setActiveView: (view: AppView) => void;
 
   // Location (Strictly Ijebu Ode and Ijagun)
   selectedLocation: LocationArea;
@@ -58,6 +68,15 @@ interface StoreContextType {
     role?: UserRole;
   }) => Promise<CustomerUser>;
   logoutCustomer: () => void;
+  accountTab: AccountTab;
+  openAccount: (tab?: AccountTab) => void;
+  setAccountTab: (tab: AccountTab) => void;
+  updateProfile: (update: { fullName?: string; email?: string; phone?: string; preferredLocation?: LocationArea }) => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  setDefaultAddress: (addressId: string) => Promise<void>;
+  addAddress: (address: Omit<CustomerAddress, 'id'>) => Promise<void>;
+  cancelOrder: (orderId: string) => Promise<void>;
+  reorder: (order: Order) => { added: number; skipped: number };
   requestPasswordReset: (identifier: string) => Promise<void>;
   checkApplicationStatus: (phone: string) => Promise<ApplicationStatusDto | null>;
   marketplaceLoading: boolean;
@@ -171,19 +190,34 @@ const LOCAL_STORAGE_KEYS = {
   ACTIVE_LOCATION: 'chop_active_location_v1',
 };
 
-const PORTAL_PATHS: Partial<Record<'marketplace' | 'for-vendors' | 'vendor-workspace' | 'admin-control', string>> = {
+const PORTAL_PATHS: Partial<Record<AppView, string>> = {
   'vendor-workspace': '/vendor',
   'admin-control': '/admin',
 };
 
 export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   // Navigation & View
-  const [activeView, setLocalView] = useState<'marketplace' | 'for-vendors' | 'vendor-workspace' | 'admin-control'>('marketplace');
-  const setActiveView = useCallback((view: 'marketplace' | 'for-vendors' | 'vendor-workspace' | 'admin-control') => {
+  const [activeView, setLocalView] = useState<AppView>(viewFromPath);
+  const setActiveView = useCallback((view: AppView) => {
     const external = PORTAL_PATHS[view];
-    if (external) window.location.assign(external);
-    else setLocalView(view);
+    if (external) {
+      window.location.assign(external);
+      return;
+    }
+    const onAccount = window.location.pathname.replace(/\/+$/, '') === ACCOUNT_PATH;
+    if (view === 'account' && !onAccount) window.history.pushState(null, '', ACCOUNT_PATH);
+    if (view !== 'account' && onAccount) window.history.pushState(null, '', '/');
+    setLocalView(view);
+    window.scrollTo({ top: 0 });
   }, []);
+
+  useEffect(() => {
+    const sync = () => setLocalView(viewFromPath());
+    window.addEventListener('popstate', sync);
+    return () => window.removeEventListener('popstate', sync);
+  }, []);
+
+  const [accountTab, setAccountTab] = useState<AccountTab>('overview');
   
   // Location (Strictly Ijebu Ode or Ijagun)
   const [selectedLocation, setSelectedLocationState] = useState<LocationArea>(() => {
@@ -246,7 +280,36 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return user;
   };
 
-  const logoutCustomer = () => account.logout();
+  const logoutCustomer = () => {
+    account.logout();
+    if (activeView === 'account') setActiveView('marketplace');
+  };
+
+  const openAccount = (tab: AccountTab = 'overview') => {
+    if (!account.user) {
+      openSignIn();
+      return;
+    }
+    setAccountTab(tab);
+    setAccountModalState(false);
+    setIsOrderTrackerOpen(false);
+    setIsCartDrawerOpen(false);
+    setActiveView('account');
+  };
+
+  const setIsAccountModalOpen = (open: boolean) => {
+    if (open) openAccount('overview');
+    else setAccountModalState(false);
+  };
+
+  const updateProfile = (update: { fullName?: string; email?: string; phone?: string; preferredLocation?: LocationArea }) =>
+    account.updateProfile(update);
+
+  const changePassword = (currentPassword: string, newPassword: string) => account.changePassword(currentPassword, newPassword);
+
+  const setDefaultAddress = (addressId: string) => account.setDefaultAddress(addressId);
+
+  const addAddress = (address: Omit<CustomerAddress, 'id'>) => account.saveAddress(address);
 
   const requestPasswordReset = (identifier: string) => account.requestPasswordReset(identifier);
 
@@ -254,7 +317,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   // Modals
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
-  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+  const [isAccountModalOpen, setAccountModalState] = useState(false);
   const [isOrderTrackerOpen, setIsOrderTrackerOpen] = useState(false);
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
   const [selectedVendorStorefront, setSelectedVendorStorefront] = useState<Vendor | null>(null);
@@ -892,6 +955,35 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const reloadOrders = liveOrders.reload;
 
+  const cancelOrder = (orderId: string) => liveOrders.cancel(orderId);
+
+  const reorder = (order: Order) => {
+    const available = order.items.flatMap((line) => {
+      const item = liveMenuItems.find((entry) => entry.id === line.menuItemId && entry.isAvailable);
+      return item
+        ? [
+            {
+              cartItemId: `re_${item.id}_${Date.now()}`,
+              menuItemId: item.id,
+              vendorId: item.vendorId,
+              vendorName: order.vendorName,
+              name: item.name,
+              unitPrice: item.price,
+              quantity: line.quantity,
+              selectedOptions: [],
+              itemTotal: item.price * line.quantity,
+            } satisfies CartItem,
+          ]
+        : [];
+    });
+    if (available.length > 0) {
+      setCart(available);
+      setActiveView('marketplace');
+      setIsCartDrawerOpen(true);
+    }
+    return { added: available.length, skipped: order.items.length - available.length };
+  };
+
   useEffect(() => {
     setActiveOrderToTrack((current) => {
       if (!current) return current;
@@ -925,6 +1017,15 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         loginCustomer,
         registerCustomer,
         logoutCustomer,
+        accountTab,
+        openAccount,
+        setAccountTab,
+        updateProfile,
+        changePassword,
+        setDefaultAddress,
+        addAddress,
+        cancelOrder,
+        reorder,
         requestPasswordReset,
         checkApplicationStatus,
         marketplaceLoading: marketplace.loading,

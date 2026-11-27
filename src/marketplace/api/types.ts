@@ -38,6 +38,7 @@ export interface MarketplaceVendorDto {
 }
 
 export interface OrderLineDto {
+  menuItemId: string | null;
   name: string;
   price: number;
   quantity: number;

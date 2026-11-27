@@ -54,5 +54,10 @@ export function useCustomerOrders(token: string | null, area: LocationArea) {
     setDtos((current) => merge([dto], current));
   }, []);
 
-  return { orders, addPlaced, reload };
+  const cancel = useCallback(async (orderId: string) => {
+    const result = await marketplaceApi.cancelOrder(orderId);
+    setDtos((current) => current.map((entry) => (entry.id === orderId ? { ...entry, ...result.order } : entry)));
+  }, []);
+
+  return { orders, addPlaced, reload, cancel };
 }

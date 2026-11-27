@@ -16,6 +16,7 @@ export const MobileBottomNav: React.FC = () => {
     cart,
     setIsCartDrawerOpen,
     approvedVendors,
+    openAccount,
   } = useStore();
 
   // Vendor & Admin workspaces have their own separate navigation
@@ -81,7 +82,7 @@ export const MobileBottomNav: React.FC = () => {
       setActiveOrderToTrack(latestActiveOrder);
       setIsOrderTrackerOpen(true);
     } else {
-      setIsAccountModalOpen(true);
+      openAccount('orders');
     }
   };
 

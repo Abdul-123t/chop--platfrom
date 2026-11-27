@@ -17,6 +17,7 @@ import { MobileBottomNav } from './components/common/MobileBottomNav';
 import { VendorRecruitmentPage } from './components/vendor/VendorRecruitmentPage';
 import { VendorWorkspace } from './components/vendor/VendorWorkspace';
 import { AdminControlCenter } from './components/admin/AdminControlCenter';
+import { CustomerDashboard } from './components/account/CustomerDashboard';
 import { MapPin, Clock, ArrowRight, Store } from 'lucide-react';
 import { SERVICE_LOCATIONS, formatNaira } from './lib/constants';
 
@@ -202,6 +203,8 @@ export const AppContent: React.FC = () => {
 
         {/* ── Admin Control Centre ── */}
         {activeView === 'admin-control' && <AdminControlCenter />}
+
+        {activeView === 'account' && <CustomerDashboard />}
 
       </main>
 

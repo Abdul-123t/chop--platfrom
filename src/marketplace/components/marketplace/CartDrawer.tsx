@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   X,
   ShoppingBag,
@@ -32,6 +32,7 @@ export const CartDrawer: React.FC = () => {
     placeOrder,
     cartVendor,
     currentUser,
+    savedAddresses,
   } = useStore();
 
   const [fulfillmentType, setFulfillmentType] = useState<'delivery' | 'pickup'>('delivery');
@@ -43,10 +44,19 @@ export const CartDrawer: React.FC = () => {
   const [customerName, setCustomerName] = useState(currentUser?.fullName ?? '');
   const [customerPhone, setCustomerPhone] = useState(currentUser?.phone ?? '');
   const [customerEmail, setCustomerEmail] = useState(currentUser?.email ?? '');
-  const [street, setStreet] = useState('');
-  const [hostelOrBuilding, setHostelOrBuilding] = useState('');
-  const [landmark, setLandmark] = useState('');
-  const [directions, setDirections] = useState('');
+  const defaultAddress = savedAddresses.find((address) => address.isDefault) ?? savedAddresses[0];
+  const [street, setStreet] = useState(defaultAddress?.street ?? '');
+  const [hostelOrBuilding, setHostelOrBuilding] = useState(defaultAddress?.hostelOrBuilding ?? '');
+  const [landmark, setLandmark] = useState(defaultAddress?.landmark ?? '');
+  const [directions, setDirections] = useState(defaultAddress?.directions ?? '');
+
+  const applyAddress = (address: (typeof savedAddresses)[number]) => {
+    setStreet(address.street);
+    setHostelOrBuilding(address.hostelOrBuilding ?? '');
+    setLandmark(address.landmark);
+    setDirections(address.directions ?? '');
+    setOrderLocation(address.locationArea);
+  };
   const paymentMethod = 'cash_on_delivery' as const;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,6 +66,22 @@ export const CartDrawer: React.FC = () => {
   const canPickup = cartVendor ? cartVendor.pickupAvailable : true;
   const effectiveFulfilment: 'delivery' | 'pickup' =
     fulfillmentType === 'delivery' && !canDeliver ? 'pickup' : fulfillmentType === 'pickup' && !canPickup ? 'delivery' : fulfillmentType;
+
+  useEffect(() => {
+    if (!isCartDrawerOpen) return;
+    if (currentUser) {
+      setCustomerName((value) => value || currentUser.fullName);
+      setCustomerPhone((value) => value || currentUser.phone);
+      setCustomerEmail((value) => value || currentUser.email);
+    }
+    if (defaultAddress && !street && !landmark) {
+      setStreet(defaultAddress.street);
+      setHostelOrBuilding(defaultAddress.hostelOrBuilding ?? '');
+      setLandmark(defaultAddress.landmark);
+      setDirections(defaultAddress.directions ?? '');
+      setOrderLocation(defaultAddress.locationArea);
+    }
+  }, [isCartDrawerOpen]);
 
   if (!isCartDrawerOpen) return null;
 
@@ -348,6 +374,31 @@ export const CartDrawer: React.FC = () => {
                 </div>
 
                 {/* Specific Delivery Address Fields (only for delivery) */}
+                {effectiveFulfilment === 'delivery' && savedAddresses.length > 0 && (
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase tracking-wider text-[#77736C] mb-1">
+                      Saved addresses
+                    </label>
+                    <div className="flex gap-1.5 overflow-x-auto pb-1">
+                      {savedAddresses.map((address) => {
+                        const selected = address.street === street && address.landmark === landmark;
+                        return (
+                          <button
+                            key={address.id}
+                            type="button"
+                            onClick={() => applyAddress(address)}
+                            className={`shrink-0 py-1.5 px-3 rounded-full text-xs font-semibold border transition-all ${
+                              selected ? 'bg-[#141414] text-white border-[#141414]' : 'bg-white text-[#191919] border-[#E6E2DA]'
+                            }`}
+                          >
+                            {address.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {effectiveFulfilment === 'delivery' && (
                   <div className="space-y-2.5 p-3 rounded-2xl bg-white border border-[#E6E2DA]">
                     <div>

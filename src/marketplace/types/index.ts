@@ -168,6 +168,12 @@ export interface Order {
   paymentStatus: 'pending' | 'verified' | 'unpaid';
   createdAt: string;
   updatedAt: string;
+  vendorPhone?: string;
+  paymentNote?: string;
+  note?: string;
+  prepTimeMinutes?: number | null;
+  deliveryAddress?: string;
+  pickupAddress?: string;
 }
 
 export interface WaitlistEntry {
