@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Download, Mail, RefreshCw } from 'lucide-react';
+import { Download, Mail, RefreshCw, Users } from 'lucide-react';
 import type { SubscribersOverview } from '../types';
 import { downloadCsv } from '../utils/csv';
 import { plural } from '../utils/format';
@@ -10,6 +10,8 @@ import { SubscriberList } from './SubscriberList';
 import { SubscriberTable } from './SubscriberTable';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { WAITLIST_PATH } from '../../services/api/env';
 import { mutedText } from '../../components/ui/styles';
 
 const PAGE_SIZE = 50;
@@ -112,7 +114,12 @@ export function SubscribersView({
           <div className={`text-[12px] ${mutedText}`}>
             Showing {plural(shown.length, 'person')} of {filtered.length.toLocaleString()}
           </div>
-          {shown.length === 0 ? (
+          {overview.subscribers.length === 0 ? (
+            <EmptyState icon={Users} title="No signups yet">
+              New customers and vendor applications appear here instantly. Share {window.location.origin}
+              {WAITLIST_PATH} to start collecting signups.
+            </EmptyState>
+          ) : shown.length === 0 ? (
             <div className={`py-8 text-center text-[13px] ${mutedText}`}>No one matches these filters.</div>
           ) : (
             <>
