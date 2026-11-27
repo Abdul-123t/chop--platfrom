@@ -1,12 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
-import { ApiError } from '../../services/api/http';
-import { streamAdminEvents, type AdminEvent } from '../../services/api/events';
+import { ApiError } from '../services/api/http';
+import { streamEvents, type LiveEvent } from '../services/api/events';
 
 export type LiveStatus = 'connecting' | 'live' | 'offline';
 
 const MAX_BACKOFF_MS = 30_000;
 
-export function useAdminEvents(token: string, onEvent: (event: AdminEvent) => void, onUnauthorized: () => void) {
+export function useLiveEvents(
+  path: string,
+  token: string,
+  onEvent: (event: LiveEvent) => void,
+  onUnauthorized: () => void
+) {
   const [status, setStatus] = useState<LiveStatus>('connecting');
   const handlers = useRef({ onEvent, onUnauthorized });
 
@@ -22,7 +27,8 @@ export function useAdminEvents(token: string, onEvent: (event: AdminEvent) => vo
     const connect = async () => {
       setStatus('connecting');
       try {
-        await streamAdminEvents(
+        await streamEvents(
+          path,
           token,
           controller.signal,
           () => {
@@ -49,7 +55,7 @@ export function useAdminEvents(token: string, onEvent: (event: AdminEvent) => vo
       controller.abort();
       window.clearTimeout(timer);
     };
-  }, [token]);
+  }, [path, token]);
 
   return status;
 }

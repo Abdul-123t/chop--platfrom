@@ -19,6 +19,7 @@ export class ApiError extends Error {
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   body?: unknown;
+  form?: FormData;
   token?: string;
   signal?: AbortSignal;
 }
@@ -28,7 +29,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { method = 'GET', body, token, signal } = options;
+  const { method = 'GET', body, form, token, signal } = options;
   let response: Response;
   try {
     response = await fetch(apiUrl(path), {
@@ -38,7 +39,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
         ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: form ?? (body !== undefined ? JSON.stringify(body) : undefined),
     });
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') throw error;

@@ -82,7 +82,7 @@
     line-height: 1.25;
   }
 
-  p:not(.uppercase):not(.mobile-card-eyebrow) {
+  p:not(.uppercase):not(.mobile-card-eyebrow):not(.app-shell *) {
     max-width: 60ch;
     font-size: 17px;
     line-height: 1.6;
@@ -106,12 +106,12 @@
     font-size: 18px;
   }
 
-  p:not(.uppercase):not(.mobile-card-eyebrow) {
+  p:not(.uppercase):not(.mobile-card-eyebrow):not(.app-shell *) {
     font-size: 18px;
   }
 }
 
-p:not(.uppercase):not(.mobile-card-eyebrow):not(.product-preview-card *):not(.hero-phone-mockup *) {
+p:not(.uppercase):not(.mobile-card-eyebrow):not(.product-preview-card *):not(.hero-phone-mockup *):not(.app-shell *) {
   max-width: 60ch;
   font-size: 17px;
   line-height: 1.6;
@@ -129,7 +129,7 @@ p:not(.uppercase):not(.mobile-card-eyebrow):not(.product-preview-card *):not(.he
 }
 
 @media (min-width: 768px) {
-  p:not(.uppercase):not(.mobile-card-eyebrow):not(.product-preview-card *):not(.hero-phone-mockup *) {
+  p:not(.uppercase):not(.mobile-card-eyebrow):not(.product-preview-card *):not(.hero-phone-mockup *):not(.app-shell *) {
     font-size: 18px;
   }
 }

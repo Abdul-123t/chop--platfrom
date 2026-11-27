@@ -15,6 +15,20 @@ export interface VendorDetails {
   additionalComments: string;
 }
 
+export interface VendorAccount {
+  id: string;
+  slug: string;
+  activated: boolean;
+  published: boolean;
+  suspended: boolean;
+  publicUrl: string;
+}
+
+export interface VendorAccountResult {
+  account: VendorAccount;
+  setupLink?: { url: string; expiresAt: number };
+}
+
 export interface Subscriber {
   id: string;
   type: SubscriberType;
@@ -31,6 +45,7 @@ export interface Subscriber {
   reviewedAt: string;
   subscribed: boolean;
   vendor: VendorDetails | null;
+  account: VendorAccount | null;
 }
 
 export interface SubscriberUpdate {

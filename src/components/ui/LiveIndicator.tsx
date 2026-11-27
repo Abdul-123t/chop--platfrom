@@ -1,5 +1,5 @@
-import { mutedText } from '../../components/ui/styles';
-import type { LiveStatus } from '../hooks/useAdminEvents';
+import { mutedText } from './styles';
+import type { LiveStatus } from '../../hooks/useLiveEvents';
 
 const META: Record<LiveStatus, { label: string; dot: string }> = {
   live: { label: 'Live', dot: 'bg-[#3FA66B] animate-pulse' },

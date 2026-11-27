@@ -1,9 +1,9 @@
 import { LogOut, Menu, Moon, Sun } from 'lucide-react';
 import type { ThemeMode } from '../../types';
-import type { LiveStatus } from '../hooks/useAdminEvents';
+import type { LiveStatus } from '../../hooks/useLiveEvents';
 import { ADMIN_NAV, confirmSignOut } from '../navigation';
 import type { AdminTab } from '../types';
-import { LiveIndicator } from './LiveIndicator';
+import { LiveIndicator } from '../../components/ui/LiveIndicator';
 import { Segmented } from '../../components/ui/Segmented';
 import { Wordmark } from '../../components/ui/Wordmark';
 

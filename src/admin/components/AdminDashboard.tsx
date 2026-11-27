@@ -4,8 +4,8 @@ import { mutedText } from '../../components/ui/styles';
 import { useTheme } from '../../hooks/useTheme';
 import { adminApi } from '../../services/api/admin';
 import type { AdminEvent } from '../../services/api/events';
-import { useAdminEvents } from '../hooks/useAdminEvents';
-import { useAdminQuery } from '../hooks/useAdminQuery';
+import { useLiveEvents } from '../../hooks/useLiveEvents';
+import { useTokenQuery } from '../../hooks/useTokenQuery';
 import type { AdminTab, AudienceKind, Subscriber } from '../types';
 import { AdminHeader } from './AdminHeader';
 import { AdminSidebar } from './AdminSidebar';
@@ -29,7 +29,7 @@ export function AdminDashboard({ token, onLogout }: AdminDashboardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
   const [historyVersion, setHistoryVersion] = useState(0);
-  const overview = useAdminQuery(token, adminApi.subscribers, onLogout);
+  const overview = useTokenQuery(token, adminApi.subscribers, onLogout);
   const refreshTimer = useRef<number | undefined>(undefined);
   const { reload, setData } = overview;
 
@@ -44,7 +44,7 @@ export function AdminDashboard({ token, onLogout }: AdminDashboardProps) {
 
   useEffect(() => () => window.clearTimeout(refreshTimer.current), []);
 
-  const liveStatus = useAdminEvents(token, handleEvent, onLogout);
+  const liveStatus = useLiveEvents('/api/admin/events', token, handleEvent, onLogout);
 
   const effectiveAudience: AudienceKind = audienceKind === 'selected' && selected.size === 0 ? 'all' : audienceKind;
   const openSubscriber = overview.data?.subscribers.find((subscriber) => subscriber.id === openId) ?? null;

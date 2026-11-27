@@ -10,7 +10,7 @@ interface CardProps {
 
 export function Card({ title, actions, children, className = '' }: CardProps) {
   return (
-    <section className={`${cardClass} ${className}`}>
+    <div className={`${cardClass} ${className}`}>
       {(title || actions) && (
         <header className="flex flex-wrap items-center justify-between gap-2 px-4 pt-3.5 pb-2">
           {title && <h2 className="text-[15px] font-bold tracking-tight">{title}</h2>}
@@ -18,6 +18,6 @@ export function Card({ title, actions, children, className = '' }: CardProps) {
         </header>
       )}
       <div className="px-4 pb-4 pt-1">{children}</div>
-    </section>
+    </div>
   );
 }
